@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#FF6B35">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GlassLang Palavras">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>GlassLang · 1500 Palavras</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0D0D0F;color:#E8E8E8;font-family:'Trebuchet MS',sans-serif;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#1a0800 0%,#0D0D0F 70%);border-bottom:1px solid rgba(255,107,53,0.2);padding:16px 14px 12px;}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+h1{font-size:19px;font-weight:900;color:#FF6B35;letter-spacing:2px;text-transform:uppercase;}
+.header-sub{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+.controls{background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-box{flex:1;min-width:140px;background:rgba(255,255,255,0.07);border:1px solid #444;border-radius:20px;padding:7px 14px;color:#fff;font-size:14px;outline:none;}
+.search-box::placeholder{color:#555;}
+.cat-scroll{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.cat-btn{border:none;border-radius:20px;padding:5px 13px;cursor:pointer;font-weight:700;font-size:11px;white-space:nowrap;background:rgba(255,255,255,0.07);color:#bbb;flex-shrink:0;transition:all 0.2s;}
+.cat-btn.active{color:#000;}
+.lang-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);}
+.lang-toggle{border-radius:20px;padding:3px 11px;cursor:pointer;font-size:11px;font-weight:700;border:none;transition:all 0.2s;}
+.content{max-width:680px;margin:0 auto;padding:12px 12px;}
+.stats-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+.stat{font-size:12px;color:#666;}
+.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;}
+.word-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:11px 13px;}
+.word-card:hover{border-color:rgba(255,107,53,0.3);}
+.word-en{font-size:16px;font-weight:700;color:#FF6B35;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.word-type{font-size:10px;color:#666;background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 7px;font-weight:600;letter-spacing:0.5px;}
+.translations{display:flex;flex-direction:column;gap:4px;}
+.trans-row{display:flex;align-items:center;gap:7px;}
+.lang-badge{border-radius:12px;padding:1px 7px;font-size:10px;font-family:monospace;font-weight:700;flex-shrink:0;}
+.trans-text{font-size:13px;color:#ccc;font-family:Georgia,serif;flex:1;}
+.spk{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:24px;height:24px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all 0.2s;}
+.spk.p{background:#FF6B35;border-color:#FF6B35;}
+.spk.pt{background:#4ECDC4;border-color:#4ECDC4;}
+.no-results{text-align:center;padding:40px 20px;color:#555;font-size:15px;}
+.load-more{display:block;width:calc(100% - 24px);max-width:680px;margin:16px auto;background:rgba(255,107,53,0.15);border:1px solid #FF6B35;border-radius:25px;padding:12px;color:#FF6B35;font-weight:700;font-size:14px;cursor:pointer;text-align:center;letter-spacing:1px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.07);border:1px solid #444;border-radius:20px;padding:5px 14px;color:#aaa;font-size:12px;cursor:pointer;font-weight:700;text-decoration:none;}
+.mode-bar{display:flex;gap:8px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);}
+.mode-btn{border:none;border-radius:20px;padding:5px 14px;cursor:pointer;font-weight:700;font-size:12px;background:rgba(255,255,255,0.07);color:#888;transition:all 0.2s;}
+.mode-btn.active{background:#FF6B35;color:#000;}
+/* QUIZ MODE */
+.wquiz-card{background:rgba(155,114,207,0.08);border:2px solid #9B72CF;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;}
+.wquiz-word{font-size:28px;font-weight:900;color:#FF6B35;margin:10px 0 4px;}
+.wquiz-type{font-size:11px;color:#777;margin-bottom:14px;}
+.wquiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+.wquiz-opt{border-radius:10px;padding:12px 10px;cursor:pointer;font-size:13px;font-family:Georgia,serif;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#ccc;transition:all 0.2s;}
+.wquiz-opt.correct{background:rgba(78,205,196,0.15);border:1px solid #4ECDC4;color:#4ECDC4;}
+.wquiz-opt.wrong{background:rgba(255,80,80,0.15);border:1px solid #f55;color:#f55;}
+.wq-score{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.sq{border-radius:8px;padding:4px 12px;font-size:12px;}
+.sq-g{background:rgba(78,205,196,0.12);border:1px solid #4ECDC4;color:#4ECDC4;}
+.sq-o{background:rgba(255,107,53,0.12);border:1px solid #FF6B35;color:#FF6B35;}
+.sq-gr{background:rgba(255,255,255,0.04);border:1px solid #444;color:#888;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+button:active{transform:scale(0.96)}
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span style="font-size:22px">📖</span>
+    <div>
+      <h1>GlassLang · Palavras</h1>
+      <div class="header-sub">1500 PALAVRAS MAIS COMUNS · 🔊 ÁUDIO · 4 LÍNGUAS</div>
+    </div>
+  </div>
+  <a class="back-btn" onclick="history.back()">← Voltar ao App</a>
+</div>
+
+<div class="mode-bar">
+  <button class="mode-btn active" id="modeList" onclick="setMode('list')">📚 Lista</button>
+  <button class="mode-btn" id="modeQuiz" onclick="setMode('quiz')">🎯 Quiz de Palavras</button>
+</div>
+
+<div class="controls">
+  <input class="search-box" id="searchBox" placeholder="🔍 Pesquisar palavra..." oninput="onSearch()">
+  <button style="background:rgba(255,255,255,0.07);border:1px solid #444;border-radius:20px;padding:7px 14px;color:#aaa;cursor:pointer;font-size:12px;font-weight:700" onclick="document.getElementById('searchBox').value='';onSearch()">✕ Limpar</button>
+</div>
+
+<div class="lang-row">
+  <span style="color:#666;font-size:11px">Mostrar:</span>
+  <button class="lang-toggle" id="ltog-pt" onclick="toggleLang('pt')">🇧🇷 PT</button>
+  <button class="lang-toggle" id="ltog-en" onclick="toggleLang('en')">🇬🇧 EN</button>
+  <button class="lang-toggle" id="ltog-de" onclick="toggleLang('de')">🇩🇪 DE</button>
+  <button class="lang-toggle" id="ltog-fr" onclick="toggleLang('fr')">🇫🇷 FR</button>
+</div>
+
+<div class="cat-scroll" id="catScroll"></div>
+
+<div class="content">
+  <div class="stats-bar">
+    <span class="stat" id="statsText">Carregando...</span>
+    <span id="ttsStatus" style="font-size:11px;color:#666">⏳ Carregando áudio...</span>
+    <button id="speakAllBtn" onclick="toggleSpeakAll()" style="background:rgba(255,107,53,0.15);border:1px solid #FF6B35;border-radius:20px;padding:5px 14px;color:#FF6B35;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">🔊 Ouvir Tudo</button>
+    <button id="stopAllBtn" onclick="stopAll()" style="display:none;background:rgba(255,80,80,0.15);border:1px solid #f55;border-radius:20px;padding:5px 14px;color:#f55;cursor:pointer;font-size:12px;font-weight:700">⏹ Parar</button>
+    <select id="speakLangSel" style="background:rgba(255,255,255,0.07);border:1px solid #444;border-radius:20px;padding:5px 10px;color:#ccc;font-size:12px;cursor:pointer;outline:none">
+      <option value="en">🇬🇧 EN</option>
+      <option value="pt">🇧🇷 PT</option>
+      <option value="de">🇩🇪 DE</option>
+      <option value="fr">🇫🇷 FR</option>
+      <option value="all">Todas as línguas</option>
+    </select>
+  </div>
+
+  <!-- LIST MODE -->
+  <div id="listMode">
+    <div class="word-grid" id="wordGrid"></div>
+    <button class="load-more" id="loadMoreBtn" onclick="loadMore()" style="display:none">↓ CARREGAR MAIS PALAVRAS</button>
+  </div>
+
+  <!-- QUIZ MODE -->
+  <div id="quizMode" style="display:none">
+    <div class="wq-score">
+      <div class="sq sq-g" id="wqOk">✅ 0</div>
+      <div class="sq sq-gr" id="wqTotal">📊 0</div>
+      <div class="sq sq-o" id="wqPct" style="display:none">🎯 0%</div>
+    </div>
+    <div class="config-bar" style="background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <span style="color:#888;font-size:12px">Traduzir de:</span>
+      <div id="wqFromBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <span style="color:#888;font-size:12px">→ Para:</span>
+      <div id="wqToBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div id="wquizArea"></div>
+  </div>
+</div>
+
+<script>
+const LANG_CODES={pt:"pt-BR",en:"en-US",de:"de-DE",fr:"fr-FR"};
+const LANG_COLORS={
+  pt:{bg:"#006400",text:"#fff",label:"🇧🇷 PT"},
+  en:{bg:"#012169",text:"#fff",label:"🇬🇧 EN"},
+  de:{bg:"#1a1a00",text:"#FFD700",label:"🇩🇪 DE"},
+  fr:{bg:"#002395",text:"#fff",label:"🇫🇷 FR"},
+};
+const ALL_LANGS=["pt","en","de","fr"];
+
+// ── 1500 WORDS ────────────────────────────────────────────────────────────────
+// Format: [en, pt, de, fr, type, category]
+// type: n=noun, v=verb, adj=adjective, adv=adverb, prep=preposition, conj=conjunction, pron=pronoun, num=number, int=interjection
+const RAW=[
+// ── ESSENTIALS & PRONOUNS
+["I","eu","ich","je","pron","Essenciais"],
+["you","você","du/Sie","vous/tu","pron","Essenciais"],
+["he","ele","er","il","pron","Essenciais"],
+["she","ela","sie","elle","pron","Essenciais"],
+["it","isso","es","il/elle","pron","Essenciais"],
+["we","nós","wir","nous","pron","Essenciais"],
+["they","eles/elas","sie","ils/elles","pron","Essenciais"],
+["this","este/esta","dieser","ce/cette","pron","Essenciais"],
+["that","aquele/aquela","jener","ce/cet","pron","Essenciais"],
+["these","estes/estas","diese","ces","pron","Essenciais"],
+["those","aqueles/aquelas","jene","ces","pron","Essenciais"],
+["what","o que","was","quoi","pron","Essenciais"],
+["who","quem","wer","qui","pron","Essenciais"],
+["which","qual","welcher","lequel","pron","Essenciais"],
+["where","onde","wo","où","adv","Essenciais"],
+["when","quando","wann","quand","adv","Essenciais"],
+["why","por quê","warum","pourquoi","adv","Essenciais"],
+["how","como","wie","comment","adv","Essenciais"],
+["yes","sim","ja","oui","int","Essenciais"],
+["no","não","nein","non","int","Essenciais"],
+["please","por favor","bitte","s'il vous plaît","int","Essenciais"],
+["thank you","obrigado","danke","merci","int","Essenciais"],
+["sorry","desculpe","Entschuldigung","désolé","int","Essenciais"],
+["hello","olá","hallo","bonjour","int","Essenciais"],
+["goodbye","tchau","auf Wiedersehen","au revoir","int","Essenciais"],
+["ok","tudo bem","okay","d'accord","int","Essenciais"],
+["help","ajuda","Hilfe","aide","n","Essenciais"],
+["here","aqui","hier","ici","adv","Essenciais"],
+["there","lá","dort","là","adv","Essenciais"],
+["now","agora","jetzt","maintenant","adv","Essenciais"],
+// ── VERBS - BASIC
+["be","ser/estar","sein","être","v","Verbos Básicos"],
+["have","ter","haben","avoir","v","Verbos Básicos"],
+["do","fazer","machen","faire","v","Verbos Básicos"],
+["say","dizer","sagen","dire","v","Verbos Básicos"],
+["go","ir","gehen","aller","v","Verbos Básicos"],
+["get","obter/pegar","bekommen","obtenir","v","Verbos Básicos"],
+["make","fazer/criar","machen","faire","v","Verbos Básicos"],
+["know","saber/conhecer","wissen","savoir","v","Verbos Básicos"],
+["think","pensar","denken","penser","v","Verbos Básicos"],
+["see","ver","sehen","voir","v","Verbos Básicos"],
+["come","vir","kommen","venir","v","Verbos Básicos"],
+["want","querer","wollen","vouloir","v","Verbos Básicos"],
+["look","olhar","schauen","regarder","v","Verbos Básicos"],
+["use","usar","benutzen","utiliser","v","Verbos Básicos"],
+["find","encontrar","finden","trouver","v","Verbos Básicos"],
+["give","dar","geben","donner","v","Verbos Básicos"],
+["tell","contar/dizer","erzählen","raconter","v","Verbos Básicos"],
+["work","trabalhar","arbeiten","travailler","v","Verbos Básicos"],
+["call","chamar/ligar","anrufen","appeler","v","Verbos Básicos"],
+["try","tentar","versuchen","essayer","v","Verbos Básicos"],
+["ask","perguntar","fragen","demander","v","Verbos Básicos"],
+["need","precisar","brauchen","avoir besoin","v","Verbos Básicos"],
+["feel","sentir","fühlen","sentir","v","Verbos Básicos"],
+["become","tornar-se","werden","devenir","v","Verbos Básicos"],
+["leave","sair/deixar","verlassen","partir/quitter","v","Verbos Básicos"],
+["put","colocar","legen/stellen","mettre","v","Verbos Básicos"],
+["mean","significar","bedeuten","signifier","v","Verbos Básicos"],
+["keep","manter","behalten","garder","v","Verbos Básicos"],
+["let","deixar/permitir","lassen","laisser","v","Verbos Básicos"],
+["begin","começar","beginnen","commencer","v","Verbos Básicos"],
+["show","mostrar","zeigen","montrer","v","Verbos Básicos"],
+["hear","ouvir","hören","entendre","v","Verbos Básicos"],
+["play","jogar/tocar","spielen","jouer","v","Verbos Básicos"],
+["run","correr","laufen","courir","v","Verbos Básicos"],
+["move","mover","bewegen","bouger","v","Verbos Básicos"],
+["live","viver","leben","vivre","v","Verbos Básicos"],
+["believe","acreditar","glauben","croire","v","Verbos Básicos"],
+["hold","segurar","halten","tenir","v","Verbos Básicos"],
+["bring","trazer","bringen","apporter","v","Verbos Básicos"],
+["write","escrever","schreiben","écrire","v","Verbos Básicos"],
+["stand","ficar de pé","stehen","se tenir debout","v","Verbos Básicos"],
+["read","ler","lesen","lire","v","Verbos Básicos"],
+["spend","gastar/passar","ausgeben/verbringen","dépenser/passer","v","Verbos Básicos"],
+["talk","falar/conversar","reden","parler","v","Verbos Básicos"],
+["turn","girar/virar","drehen","tourner","v","Verbos Básicos"],
+["start","iniciar","starten","démarrer","v","Verbos Básicos"],
+["open","abrir","öffnen","ouvrir","v","Verbos Básicos"],
+["close","fechar","schließen","fermer","v","Verbos Básicos"],
+["wait","esperar","warten","attendre","v","Verbos Básicos"],
+["stop","parar","stoppen","arrêter","v","Verbos Básicos"],
+["eat","comer","essen","manger","v","Verbos Básicos"],
+["drink","beber","trinken","boire","v","Verbos Básicos"],
+["sleep","dormir","schlafen","dormir","v","Verbos Básicos"],
+["buy","comprar","kaufen","acheter","v","Verbos Básicos"],
+["pay","pagar","bezahlen","payer","v","Verbos Básicos"],
+["send","enviar","senden","envoyer","v","Verbos Básicos"],
+["receive","receber","empfangen","recevoir","v","Verbos Básicos"],
+["check","verificar","überprüfen","vérifier","v","Verbos Básicos"],
+["fix","consertar/corrigir","reparieren","réparer","v","Verbos Básicos"],
+["break","quebrar","brechen","casser","v","Verbos Básicos"],
+["cut","cortar","schneiden","couper","v","Verbos Básicos"],
+["build","construir","bauen","construire","v","Verbos Básicos"],
+["carry","carregar","tragen","porter","v","Verbos Básicos"],
+["sit","sentar","sitzen","s'asseoir","v","Verbos Básicos"],
+["meet","encontrar/conhecer","treffen","rencontrer","v","Verbos Básicos"],
+["change","mudar","ändern","changer","v","Verbos Básicos"],
+["help","ajudar","helfen","aider","v","Verbos Básicos"],
+["follow","seguir","folgen","suivre","v","Verbos Básicos"],
+["allow","permitir","erlauben","permettre","v","Verbos Básicos"],
+["add","adicionar","hinzufügen","ajouter","v","Verbos Básicos"],
+["grow","crescer","wachsen","grandir/pousser","v","Verbos Básicos"],
+["fall","cair","fallen","tomber","v","Verbos Básicos"],
+["fill","preencher/encher","füllen","remplir","v","Verbos Básicos"],
+["learn","aprender","lernen","apprendre","v","Verbos Básicos"],
+["teach","ensinar","lehren","enseigner","v","Verbos Básicos"],
+["speak","falar","sprechen","parler","v","Verbos Básicos"],
+["listen","ouvir/escutar","zuhören","écouter","v","Verbos Básicos"],
+["understand","entender","verstehen","comprendre","v","Verbos Básicos"],
+["remember","lembrar","erinnern","se souvenir","v","Verbos Básicos"],
+["forget","esquecer","vergessen","oublier","v","Verbos Básicos"],
+["choose","escolher","wählen","choisir","v","Verbos Básicos"],
+["decide","decidir","entscheiden","décider","v","Verbos Básicos"],
+["pull","puxar","ziehen","tirer","v","Verbos Básicos"],
+["push","empurrar","drücken/schieben","pousser","v","Verbos Básicos"],
+["throw","jogar/lançar","werfen","lancer","v","Verbos Básicos"],
+["catch","pegar/agarrar","fangen","attraper","v","Verbos Básicos"],
+["win","ganhar/vencer","gewinnen","gagner","v","Verbos Básicos"],
+["lose","perder","verlieren","perdre","v","Verbos Básicos"],
+["count","contar","zählen","compter","v","Verbos Básicos"],
+["measure","medir","messen","mesurer","v","Verbos Básicos"],
+["clean","limpar","reinigen","nettoyer","v","Verbos Básicos"],
+["wash","lavar","waschen","laver","v","Verbos Básicos"],
+["cook","cozinhar","kochen","cuisiner","v","Verbos Básicos"],
+["drive","dirigir","fahren","conduire","v","Verbos Básicos"],
+["fly","voar","fliegen","voler","v","Verbos Básicos"],
+["swim","nadar","schwimmen","nager","v","Verbos Básicos"],
+["walk","caminhar","gehen/laufen","marcher","v","Verbos Básicos"],
+["jump","pular","springen","sauter","v","Verbos Básicos"],
+["smile","sorrir","lächeln","sourire","v","Verbos Básicos"],
+["laugh","rir","lachen","rire","v","Verbos Básicos"],
+["cry","chorar","weinen","pleurer","v","Verbos Básicos"],
+["love","amar","lieben","aimer","v","Verbos Básicos"],
+["hate","odiar","hassen","détester","v","Verbos Básicos"],
+["like","gostar","mögen","aimer bien","v","Verbos Básicos"],
+["enjoy","desfrutar","genießen","profiter","v","Verbos Básicos"],
+["prefer","preferir","vorziehen","préférer","v","Verbos Básicos"],
+["accept","aceitar","akzeptieren","accepter","v","Verbos Básicos"],
+["refuse","recusar","ablehnen","refuser","v","Verbos Básicos"],
+["agree","concordar","zustimmen","être d'accord","v","Verbos Básicos"],
+["disagree","discordar","nicht zustimmen","être en désaccord","v","Verbos Básicos"],
+// ── NUMBERS
+["zero","zero","null","zéro","num","Números"],
+["one","um","ein","un","num","Números"],
+["two","dois","zwei","deux","num","Números"],
+["three","três","drei","trois","num","Números"],
+["four","quatro","vier","quatre","num","Números"],
+["five","cinco","fünf","cinq","num","Números"],
+["six","seis","sechs","six","num","Números"],
+["seven","sete","sieben","sept","num","Números"],
+["eight","oito","acht","huit","num","Números"],
+["nine","nove","neun","neuf","num","Números"],
+["ten","dez","zehn","dix","num","Números"],
+["eleven","onze","elf","onze","num","Números"],
+["twelve","doze","zwölf","douze","num","Números"],
+["thirteen","treze","dreizehn","treize","num","Números"],
+["fourteen","quatorze","vierzehn","quatorze","num","Números"],
+["fifteen","quinze","fünfzehn","quinze","num","Números"],
+["sixteen","dezesseis","sechzehn","seize","num","Números"],
+["seventeen","dezessete","siebzehn","dix-sept","num","Números"],
+["eighteen","dezoito","achtzehn","dix-huit","num","Números"],
+["nineteen","dezenove","neunzehn","dix-neuf","num","Números"],
+["twenty","vinte","zwanzig","vingt","num","Números"],
+["thirty","trinta","dreißig","trente","num","Números"],
+["forty","quarenta","vierzig","quarante","num","Números"],
+["fifty","cinquenta","fünfzig","cinquante","num","Números"],
+["sixty","sessenta","sechzig","soixante","num","Números"],
+["seventy","setenta","siebzig","soixante-dix","num","Números"],
+["eighty","oitenta","achtzig","quatre-vingts","num","Números"],
+["ninety","noventa","neunzig","quatre-vingt-dix","num","Números"],
+["hundred","cem/cento","hundert","cent","num","Números"],
+["thousand","mil","tausend","mille","num","Números"],
+["million","milhão","Million","million","num","Números"],
+["first","primeiro","erste","premier","num","Números"],
+["second","segundo","zweite","deuxième","num","Números"],
+["third","terceiro","dritte","troisième","num","Números"],
+["half","metade","Hälfte","moitié","num","Números"],
+["quarter","quarto","Viertel","quart","num","Números"],
+// ── TIME
+["time","tempo/hora","Zeit","temps/heure","n","Tempo"],
+["day","dia","Tag","jour","n","Tempo"],
+["week","semana","Woche","semaine","n","Tempo"],
+["month","mês","Monat","mois","n","Tempo"],
+["year","ano","Jahr","année","n","Tempo"],
+["today","hoje","heute","aujourd'hui","adv","Tempo"],
+["yesterday","ontem","gestern","hier","adv","Tempo"],
+["tomorrow","amanhã","morgen","demain","adv","Tempo"],
+["morning","manhã","Morgen","matin","n","Tempo"],
+["afternoon","tarde","Nachmittag","après-midi","n","Tempo"],
+["evening","noite (início)","Abend","soir","n","Tempo"],
+["night","noite","Nacht","nuit","n","Tempo"],
+["hour","hora","Stunde","heure","n","Tempo"],
+["minute","minuto","Minute","minute","n","Tempo"],
+["second","segundo","Sekunde","seconde","n","Tempo"],
+["Monday","segunda-feira","Montag","lundi","n","Tempo"],
+["Tuesday","terça-feira","Dienstag","mardi","n","Tempo"],
+["Wednesday","quarta-feira","Mittwoch","mercredi","n","Tempo"],
+["Thursday","quinta-feira","Donnerstag","jeudi","n","Tempo"],
+["Friday","sexta-feira","Freitag","vendredi","n","Tempo"],
+["Saturday","sábado","Samstag","samedi","n","Tempo"],
+["Sunday","domingo","Sonntag","dimanche","n","Tempo"],
+["January","janeiro","Januar","janvier","n","Tempo"],
+["February","fevereiro","Februar","février","n","Tempo"],
+["March","março","März","mars","n","Tempo"],
+["April","abril","April","avril","n","Tempo"],
+["May","maio","Mai","mai","n","Tempo"],
+["June","junho","Juni","juin","n","Tempo"],
+["July","julho","Juli","juillet","n","Tempo"],
+["August","agosto","August","août","n","Tempo"],
+["September","setembro","September","septembre","n","Tempo"],
+["October","outubro","Oktober","octobre","n","Tempo"],
+["November","novembro","November","novembre","n","Tempo"],
+["December","dezembro","Dezember","décembre","n","Tempo"],
+["spring","primavera","Frühling","printemps","n","Tempo"],
+["summer","verão","Sommer","été","n","Tempo"],
+["autumn","outono","Herbst","automne","n","Tempo"],
+["winter","inverno","Winter","hiver","n","Tempo"],
+["early","cedo","früh","tôt","adv","Tempo"],
+["late","tarde/atrasado","spät","tard/en retard","adv","Tempo"],
+["soon","em breve","bald","bientôt","adv","Tempo"],
+["always","sempre","immer","toujours","adv","Tempo"],
+["never","nunca","nie","jamais","adv","Tempo"],
+["sometimes","às vezes","manchmal","parfois","adv","Tempo"],
+["often","frequentemente","oft","souvent","adv","Tempo"],
+["already","já","schon","déjà","adv","Tempo"],
+["still","ainda","noch","encore","adv","Tempo"],
+["again","de novo","wieder","encore","adv","Tempo"],
+// ── PEOPLE & FAMILY
+["person","pessoa","Person","personne","n","Pessoas"],
+["man","homem","Mann","homme","n","Pessoas"],
+["woman","mulher","Frau","femme","n","Pessoas"],
+["boy","menino","Junge","garçon","n","Pessoas"],
+["girl","menina","Mädchen","fille","n","Pessoas"],
+["child","criança","Kind","enfant","n","Pessoas"],
+["baby","bebê","Baby","bébé","n","Pessoas"],
+["adult","adulto","Erwachsener","adulte","n","Pessoas"],
+["family","família","Familie","famille","n","Pessoas"],
+["father","pai","Vater","père","n","Pessoas"],
+["mother","mãe","Mutter","mère","n","Pessoas"],
+["son","filho","Sohn","fils","n","Pessoas"],
+["daughter","filha","Tochter","fille","n","Pessoas"],
+["brother","irmão","Bruder","frère","n","Pessoas"],
+["sister","irmã","Schwester","sœur","n","Pessoas"],
+["husband","marido","Ehemann","mari","n","Pessoas"],
+["wife","esposa","Ehefrau","femme/épouse","n","Pessoas"],
+["grandfather","avô","Großvater","grand-père","n","Pessoas"],
+["grandmother","avó","Großmutter","grand-mère","n","Pessoas"],
+["uncle","tio","Onkel","oncle","n","Pessoas"],
+["aunt","tia","Tante","tante","n","Pessoas"],
+["cousin","primo/prima","Cousin/Cousine","cousin/cousine","n","Pessoas"],
+["friend","amigo","Freund","ami","n","Pessoas"],
+["colleague","colega","Kollege","collègue","n","Pessoas"],
+["neighbor","vizinho","Nachbar","voisin","n","Pessoas"],
+["teacher","professor","Lehrer","professeur","n","Pessoas"],
+["student","aluno/estudante","Schüler/Student","élève/étudiant","n","Pessoas"],
+["doctor","médico","Arzt","médecin","n","Pessoas"],
+["nurse","enfermeiro/a","Krankenschwester","infirmier/infirmière","n","Pessoas"],
+["engineer","engenheiro","Ingenieur","ingénieur","n","Pessoas"],
+["manager","gerente","Manager","responsable/manager","n","Pessoas"],
+["boss","chefe","Chef","patron/chef","n","Pessoas"],
+["worker","trabalhador","Arbeiter","travailleur/ouvrier","n","Pessoas"],
+["customer","cliente","Kunde","client","n","Pessoas"],
+["partner","parceiro","Partner","partenaire","n","Pessoas"],
+// ── BODY
+["body","corpo","Körper","corps","n","Corpo"],
+["head","cabeça","Kopf","tête","n","Corpo"],
+["face","rosto","Gesicht","visage","n","Corpo"],
+["eye","olho","Auge","œil","n","Corpo"],
+["ear","orelha/ouvido","Ohr","oreille","n","Corpo"],
+["nose","nariz","Nase","nez","n","Corpo"],
+["mouth","boca","Mund","bouche","n","Corpo"],
+["tooth","dente","Zahn","dent","n","Corpo"],
+["hair","cabelo","Haar","cheveu","n","Corpo"],
+["hand","mão","Hand","main","n","Corpo"],
+["finger","dedo","Finger","doigt","n","Corpo"],
+["arm","braço","Arm","bras","n","Corpo"],
+["leg","perna","Bein","jambe","n","Corpo"],
+["foot","pé","Fuß","pied","n","Corpo"],
+["back","costas","Rücken","dos","n","Corpo"],
+["chest","peito","Brust","poitrine","n","Corpo"],
+["stomach","estômago/barriga","Magen/Bauch","estomac/ventre","n","Corpo"],
+["heart","coração","Herz","cœur","n","Corpo"],
+["brain","cérebro","Gehirn","cerveau","n","Corpo"],
+["blood","sangue","Blut","sang","n","Corpo"],
+["skin","pele","Haut","peau","n","Corpo"],
+["bone","osso","Knochen","os","n","Corpo"],
+["knee","joelho","Knie","genou","n","Corpo"],
+["shoulder","ombro","Schulter","épaule","n","Corpo"],
+["neck","pescoço","Hals/Nacken","cou","n","Corpo"],
+// ── HEALTH
+["health","saúde","Gesundheit","santé","n","Saúde"],
+["sick","doente","krank","malade","adj","Saúde"],
+["pain","dor","Schmerz","douleur","n","Saúde"],
+["medicine","remédio/medicina","Medizin/Medikament","médicament","n","Saúde"],
+["hospital","hospital","Krankenhaus","hôpital","n","Saúde"],
+["fever","febre","Fieber","fièvre","n","Saúde"],
+["cold","resfriado","Erkältung","rhume","n","Saúde"],
+["headache","dor de cabeça","Kopfschmerz","mal de tête","n","Saúde"],
+["allergy","alergia","Allergie","allergie","n","Saúde"],
+["tired","cansado","müde","fatigué","adj","Saúde"],
+["hungry","com fome","hungrig","affamé","adj","Saúde"],
+["thirsty","com sede","durstig","assoiffé","adj","Saúde"],
+// ── FOOD & DRINK
+["food","comida","Essen/Lebensmittel","nourriture","n","Comida"],
+["water","água","Wasser","eau","n","Comida"],
+["bread","pão","Brot","pain","n","Comida"],
+["rice","arroz","Reis","riz","n","Comida"],
+["meat","carne","Fleisch","viande","n","Comida"],
+["fish","peixe","Fisch","poisson","n","Comida"],
+["chicken","frango","Hähnchen","poulet","n","Comida"],
+["egg","ovo","Ei","œuf","n","Comida"],
+["milk","leite","Milch","lait","n","Comida"],
+["cheese","queijo","Käse","fromage","n","Comida"],
+["butter","manteiga","Butter","beurre","n","Comida"],
+["oil","óleo/azeite","Öl","huile","n","Comida"],
+["salt","sal","Salz","sel","n","Comida"],
+["sugar","açúcar","Zucker","sucre","n","Comida"],
+["coffee","café","Kaffee","café","n","Comida"],
+["tea","chá","Tee","thé","n","Comida"],
+["juice","suco","Saft","jus","n","Comida"],
+["beer","cerveja","Bier","bière","n","Comida"],
+["wine","vinho","Wein","vin","n","Comida"],
+["soup","sopa","Suppe","soupe","n","Comida"],
+["salad","salada","Salat","salade","n","Comida"],
+["fruit","fruta","Obst/Frucht","fruit","n","Comida"],
+["apple","maçã","Apfel","pomme","n","Comida"],
+["banana","banana","Banane","banane","n","Comida"],
+["orange","laranja","Orange","orange","n","Comida"],
+["vegetable","legume/verdura","Gemüse","légume","n","Comida"],
+["potato","batata","Kartoffel","pomme de terre","n","Comida"],
+["tomato","tomate","Tomate","tomate","n","Comida"],
+["onion","cebola","Zwiebel","oignon","n","Comida"],
+["garlic","alho","Knoblauch","ail","n","Comida"],
+["restaurant","restaurante","Restaurant","restaurant","n","Comida"],
+["menu","cardápio","Speisekarte","menu","n","Comida"],
+["bill","conta","Rechnung","addition","n","Comida"],
+["dessert","sobremesa","Nachtisch","dessert","n","Comida"],
+["breakfast","café da manhã","Frühstück","petit-déjeuner","n","Comida"],
+["lunch","almoço","Mittagessen","déjeuner","n","Comida"],
+["dinner","jantar","Abendessen","dîner","n","Comida"],
+// ── HOUSE & HOME
+["house","casa","Haus","maison","n","Casa"],
+["home","lar/casa","Zuhause","maison/foyer","n","Casa"],
+["room","quarto/sala","Zimmer/Raum","chambre/pièce","n","Casa"],
+["bedroom","quarto","Schlafzimmer","chambre à coucher","n","Casa"],
+["bathroom","banheiro","Badezimmer","salle de bain","n","Casa"],
+["kitchen","cozinha","Küche","cuisine","n","Casa"],
+["living room","sala de estar","Wohnzimmer","salon","n","Casa"],
+["door","porta","Tür","porte","n","Casa"],
+["window","janela","Fenster","fenêtre","n","Casa"],
+["wall","parede","Wand","mur","n","Casa"],
+["floor","chão/andar","Boden/Etage","sol/étage","n","Casa"],
+["ceiling","teto","Decke","plafond","n","Casa"],
+["roof","telhado","Dach","toit","n","Casa"],
+["stairs","escada","Treppe","escalier","n","Casa"],
+["garden","jardim","Garten","jardin","n","Casa"],
+["bed","cama","Bett","lit","n","Casa"],
+["chair","cadeira","Stuhl","chaise","n","Casa"],
+["table","mesa","Tisch","table","n","Casa"],
+["sofa","sofá","Sofa","canapé","n","Casa"],
+["lamp","lâmpada/luminária","Lampe","lampe","n","Casa"],
+["mirror","espelho","Spiegel","miroir","n","Casa"],
+["key","chave","Schlüssel","clé","n","Casa"],
+["address","endereço","Adresse","adresse","n","Casa"],
+["apartment","apartamento","Wohnung","appartement","n","Casa"],
+["building","prédio/edifício","Gebäude","bâtiment","n","Casa"],
+["neighbor","vizinho","Nachbar","voisin","n","Casa"],
+// ── CITY & TRANSPORT
+["city","cidade","Stadt","ville","n","Cidade"],
+["street","rua","Straße","rue","n","Cidade"],
+["road","estrada","Straße/Weg","route","n","Cidade"],
+["car","carro","Auto","voiture","n","Cidade"],
+["bus","ônibus","Bus","bus","n","Cidade"],
+["train","trem","Zug","train","n","Cidade"],
+["plane","avião","Flugzeug","avion","n","Cidade"],
+["airport","aeroporto","Flughafen","aéroport","n","Cidade"],
+["station","estação","Bahnhof","gare","n","Cidade"],
+["hotel","hotel","Hotel","hôtel","n","Cidade"],
+["shop","loja","Laden","magasin","n","Cidade"],
+["market","mercado","Markt","marché","n","Cidade"],
+["bank","banco","Bank","banque","n","Cidade"],
+["hospital","hospital","Krankenhaus","hôpital","n","Cidade"],
+["school","escola","Schule","école","n","Cidade"],
+["park","parque","Park","parc","n","Cidade"],
+["bridge","ponte","Brücke","pont","n","Cidade"],
+["map","mapa","Karte","carte","n","Cidade"],
+["ticket","bilhete/ingresso","Ticket/Fahrkarte","billet","n","Cidade"],
+["passport","passaporte","Reisepass","passeport","n","Cidade"],
+["police","polícia","Polizei","police","n","Cidade"],
+["taxi","táxi","Taxi","taxi","n","Cidade"],
+["bicycle","bicicleta","Fahrrad","vélo","n","Cidade"],
+["traffic","trânsito","Verkehr","circulation","n","Cidade"],
+["left","esquerda","links","gauche","n","Cidade"],
+["right","direita","rechts","droite","n","Cidade"],
+["straight","em frente/reto","geradeaus","tout droit","adv","Cidade"],
+["corner","esquina/canto","Ecke","coin","n","Cidade"],
+["north","norte","Norden","nord","n","Cidade"],
+["south","sul","Süden","sud","n","Cidade"],
+["east","leste/leste","Osten","est","n","Cidade"],
+["west","oeste","Westen","ouest","n","Cidade"],
+// ── NATURE
+["nature","natureza","Natur","nature","n","Natureza"],
+["world","mundo","Welt","monde","n","Natureza"],
+["country","país","Land","pays","n","Natureza"],
+["earth","terra","Erde","terre","n","Natureza"],
+["sky","céu","Himmel","ciel","n","Natureza"],
+["sun","sol","Sonne","soleil","n","Natureza"],
+["moon","lua","Mond","lune","n","Natureza"],
+["star","estrela","Stern","étoile","n","Natureza"],
+["sea","mar","Meer","mer","n","Natureza"],
+["ocean","oceano","Ozean","océan","n","Natureza"],
+["river","rio","Fluss","rivière/fleuve","n","Natureza"],
+["lake","lago","See","lac","n","Natureza"],
+["mountain","montanha","Berg","montagne","n","Natureza"],
+["forest","floresta","Wald","forêt","n","Natureza"],
+["tree","árvore","Baum","arbre","n","Natureza"],
+["flower","flor","Blume","fleur","n","Natureza"],
+["grass","grama/capim","Gras","herbe","n","Natureza"],
+["rain","chuva","Regen","pluie","n","Natureza"],
+["snow","neve","Schnee","neige","n","Natureza"],
+["wind","vento","Wind","vent","n","Natureza"],
+["fire","fogo","Feuer","feu","n","Natureza"],
+["water","água","Wasser","eau","n","Natureza"],
+["air","ar","Luft","air","n","Natureza"],
+["stone","pedra","Stein","pierre","n","Natureza"],
+["sand","areia","Sand","sable","n","Natureza"],
+["ice","gelo","Eis","glace","n","Natureza"],
+["cloud","nuvem","Wolke","nuage","n","Natureza"],
+["animal","animal","Tier","animal","n","Natureza"],
+["dog","cachorro","Hund","chien","n","Natureza"],
+["cat","gato","Katze","chat","n","Natureza"],
+["bird","pássaro","Vogel","oiseau","n","Natureza"],
+["fish","peixe","Fisch","poisson","n","Natureza"],
+["horse","cavalo","Pferd","cheval","n","Natureza"],
+["cow","vaca","Kuh","vache","n","Natureza"],
+// ── WORK & BUSINESS
+["work","trabalho","Arbeit","travail","n","Trabalho"],
+["job","emprego","Job/Beruf","emploi/travail","n","Trabalho"],
+["company","empresa","Unternehmen","entreprise","n","Trabalho"],
+["office","escritório","Büro","bureau","n","Trabalho"],
+["meeting","reunião","Besprechung","réunion","n","Trabalho"],
+["project","projeto","Projekt","projet","n","Trabalho"],
+["report","relatório","Bericht","rapport","n","Trabalho"],
+["contract","contrato","Vertrag","contrat","n","Trabalho"],
+["salary","salário","Gehalt","salaire","n","Trabalho"],
+["budget","orçamento","Budget","budget","n","Trabalho"],
+["deadline","prazo","Frist","délai","n","Trabalho"],
+["email","e-mail","E-Mail","e-mail","n","Trabalho"],
+["phone","telefone","Telefon","téléphone","n","Trabalho"],
+["computer","computador","Computer","ordinateur","n","Trabalho"],
+["internet","internet","Internet","internet","n","Trabalho"],
+["password","senha","Passwort","mot de passe","n","Trabalho"],
+["team","equipe","Team","équipe","n","Trabalho"],
+["leader","líder","Leiter/Anführer","leader/responsable","n","Trabalho"],
+["goal","objetivo/gol","Ziel","objectif/but","n","Trabalho"],
+["result","resultado","Ergebnis","résultat","n","Trabalho"],
+["problem","problema","Problem","problème","n","Trabalho"],
+["solution","solução","Lösung","solution","n","Trabalho"],
+["idea","ideia","Idee","idée","n","Trabalho"],
+["plan","plano","Plan","plan","n","Trabalho"],
+["strategy","estratégia","Strategie","stratégie","n","Trabalho"],
+["success","sucesso","Erfolg","succès","n","Trabalho"],
+["failure","fracasso","Misserfolg","échec","n","Trabalho"],
+["opportunity","oportunidade","Gelegenheit","opportunité","n","Trabalho"],
+["risk","risco","Risiko","risque","n","Trabalho"],
+["quality","qualidade","Qualität","qualité","n","Trabalho"],
+["price","preço","Preis","prix","n","Trabalho"],
+["cost","custo","Kosten","coût","n","Trabalho"],
+["profit","lucro","Gewinn","bénéfice","n","Trabalho"],
+["loss","perda","Verlust","perte","n","Trabalho"],
+["client","cliente","Klient","client","n","Trabalho"],
+["product","produto","Produkt","produit","n","Trabalho"],
+["service","serviço","Dienstleistung","service","n","Trabalho"],
+["order","pedido/ordem","Bestellung/Auftrag","commande","n","Trabalho"],
+["delivery","entrega","Lieferung","livraison","n","Trabalho"],
+["invoice","nota fiscal/fatura","Rechnung","facture","n","Trabalho"],
+// ── TECHNOLOGY
+["technology","tecnologia","Technologie","technologie","n","Tecnologia"],
+["machine","máquina","Maschine","machine","n","Tecnologia"],
+["engine","motor","Motor","moteur","n","Tecnologia"],
+["tool","ferramenta","Werkzeug","outil","n","Tecnologia"],
+["equipment","equipamento","Ausrüstung","équipement","n","Tecnologia"],
+["system","sistema","System","système","n","Tecnologia"],
+["program","programa","Programm","programme","n","Tecnologia"],
+["data","dados","Daten","données","n","Tecnologia"],
+["screen","tela","Bildschirm","écran","n","Tecnologia"],
+["battery","bateria","Batterie","batterie","n","Tecnologia"],
+["cable","cabo","Kabel","câble","n","Tecnologia"],
+["network","rede","Netzwerk","réseau","n","Tecnologia"],
+["software","software","Software","logiciel","n","Tecnologia"],
+["hardware","hardware","Hardware","matériel","n","Tecnologia"],
+["robot","robô","Roboter","robot","n","Tecnologia"],
+["sensor","sensor","Sensor","capteur","n","Tecnologia"],
+["valve","válvula","Ventil","vanne","n","Tecnologia"],
+["pump","bomba","Pumpe","pompe","n","Tecnologia"],
+["pressure","pressão","Druck","pression","n","Tecnologia"],
+["temperature","temperatura","Temperatur","température","n","Tecnologia"],
+["voltage","tensão/voltagem","Spannung","tension","n","Tecnologia"],
+["current","corrente","Strom","courant","n","Tecnologia"],
+["power","potência/energia","Leistung/Kraft","puissance/énergie","n","Tecnologia"],
+["energy","energia","Energie","énergie","n","Tecnologia"],
+["signal","sinal","Signal","signal","n","Tecnologia"],
+["alarm","alarme","Alarm","alarme","n","Tecnologia"],
+["button","botão","Knopf/Taste","bouton","n","Tecnologia"],
+["switch","interruptor/chave","Schalter","interrupteur","n","Tecnologia"],
+["screw","parafuso","Schraube","vis","n","Tecnologia"],
+["bolt","parafuso/porca","Bolzen","boulon","n","Tecnologia"],
+["wire","fio","Draht","fil","n","Tecnologia"],
+["pipe","cano/tubo","Rohr","tuyau","n","Tecnologia"],
+["filter","filtro","Filter","filtre","n","Tecnologia"],
+["motor","motor","Motor","moteur","n","Tecnologia"],
+// ── ADJECTIVES - QUALITIES
+["good","bom","gut","bon","adj","Adjetivos"],
+["bad","mau/ruim","schlecht","mauvais","adj","Adjetivos"],
+["big","grande","groß","grand","adj","Adjetivos"],
+["small","pequeno","klein","petit","adj","Adjetivos"],
+["long","longo","lang","long","adj","Adjetivos"],
+["short","curto/baixo","kurz/klein","court/petit","adj","Adjetivos"],
+["tall","alto","groß","grand","adj","Adjetivos"],
+["wide","largo","breit","large","adj","Adjetivos"],
+["narrow","estreito","eng/schmal","étroit","adj","Adjetivos"],
+["thick","grosso/espesso","dick","épais","adj","Adjetivos"],
+["thin","fino/magro","dünn","mince","adj","Adjetivos"],
+["heavy","pesado","schwer","lourd","adj","Adjetivos"],
+["light","leve/claro","leicht/hell","léger/clair","adj","Adjetivos"],
+["fast","rápido","schnell","rapide","adj","Adjetivos"],
+["slow","lento","langsam","lent","adj","Adjetivos"],
+["hot","quente","heiß","chaud","adj","Adjetivos"],
+["cold","frio","kalt","froid","adj","Adjetivos"],
+["warm","morno/quentinho","warm","chaud/tiède","adj","Adjetivos"],
+["cool","fresco/legal","kühl","frais","adj","Adjetivos"],
+["new","novo","neu","nouveau","adj","Adjetivos"],
+["old","velho/antigo","alt","vieux/ancien","adj","Adjetivos"],
+["young","jovem","jung","jeune","adj","Adjetivos"],
+["easy","fácil","einfach","facile","adj","Adjetivos"],
+["hard","difícil/duro","schwer/hart","difficile/dur","adj","Adjetivos"],
+["strong","forte","stark","fort","adj","Adjetivos"],
+["weak","fraco","schwach","faible","adj","Adjetivos"],
+["open","aberto","offen","ouvert","adj","Adjetivos"],
+["closed","fechado","geschlossen","fermé","adj","Adjetivos"],
+["full","cheio","voll","plein","adj","Adjetivos"],
+["empty","vazio","leer","vide","adj","Adjetivos"],
+["clean","limpo","sauber","propre","adj","Adjetivos"],
+["dirty","sujo","schmutzig","sale","adj","Adjetivos"],
+["free","livre/grátis","frei/kostenlos","libre/gratuit","adj","Adjetivos"],
+["busy","ocupado","beschäftigt","occupé","adj","Adjetivos"],
+["ready","pronto","bereit","prêt","adj","Adjetivos"],
+["sure","certo/seguro","sicher","sûr","adj","Adjetivos"],
+["possible","possível","möglich","possible","adj","Adjetivos"],
+["impossible","impossível","unmöglich","impossible","adj","Adjetivos"],
+["important","importante","wichtig","important","adj","Adjetivos"],
+["necessary","necessário","notwendig","nécessaire","adj","Adjetivos"],
+["different","diferente","anders/verschieden","différent","adj","Adjetivos"],
+["same","mesmo/igual","gleich/selbe","même","adj","Adjetivos"],
+["correct","correto","richtig/korrekt","correct","adj","Adjetivos"],
+["wrong","errado","falsch/falsch","faux/mauvais","adj","Adjetivos"],
+["beautiful","bonito/belo","schön","beau/belle","adj","Adjetivos"],
+["ugly","feio","hässlich","laid","adj","Adjetivos"],
+["happy","feliz","glücklich","heureux","adj","Adjetivos"],
+["sad","triste","traurig","triste","adj","Adjetivos"],
+["angry","com raiva","wütend","en colère","adj","Adjetivos"],
+["scared","com medo","verängstigt","effrayé","adj","Adjetivos"],
+["surprised","surpreso","überrascht","surpris","adj","Adjetivos"],
+["tired","cansado","müde","fatigué","adj","Adjetivos"],
+["safe","seguro","sicher","sûr/en sécurité","adj","Adjetivos"],
+["dangerous","perigoso","gefährlich","dangereux","adj","Adjetivos"],
+["expensive","caro","teuer","cher","adj","Adjetivos"],
+["cheap","barato","billig/günstig","bon marché/pas cher","adj","Adjetivos"],
+["useful","útil","nützlich","utile","adj","Adjetivos"],
+["useless","inútil","nutzlos","inutile","adj","Adjetivos"],
+["broken","quebrado","kaputt","cassé","adj","Adjetivos"],
+["damaged","danificado","beschädigt","endommagé","adj","Adjetivos"],
+["urgent","urgente","dringend","urgent","adj","Adjetivos"],
+["serious","sério","ernst/schwer","sérieux","adj","Adjetivos"],
+["normal","normal","normal","normal","adj","Adjetivos"],
+["special","especial","besonders/speziell","spécial","adj","Adjetivos"],
+// ── MATERIALS
+["glass","vidro","Glas","verre","n","Materiais"],
+["metal","metal","Metall","métal","n","Materiais"],
+["steel","aço","Stahl","acier","n","Materiais"],
+["iron","ferro","Eisen","fer","n","Materiais"],
+["copper","cobre","Kupfer","cuivre","n","Materiais"],
+["aluminum","alumínio","Aluminium","aluminium","n","Materiais"],
+["gold","ouro","Gold","or","n","Materiais"],
+["silver","prata","Silber","argent","n","Materiais"],
+["wood","madeira","Holz","bois","n","Materiais"],
+["plastic","plástico","Kunststoff","plastique","n","Materiais"],
+["rubber","borracha","Gummi","caoutchouc","n","Materiais"],
+["paper","papel","Papier","papier","n","Materiais"],
+["concrete","concreto","Beton","béton","n","Materiais"],
+["ceramic","cerâmica","Keramik","céramique","n","Materiais"],
+["fabric","tecido","Stoff","tissu","n","Materiais"],
+["leather","couro","Leder","cuir","n","Materiais"],
+["chemical","produto químico","Chemikalie","produit chimique","n","Materiais"],
+["acid","ácido","Säure","acide","n","Materiais"],
+["gas","gás","Gas","gaz","n","Materiais"],
+["liquid","líquido","Flüssigkeit","liquide","n","Materiais"],
+["solid","sólido","Feststoff","solide","n","Materiais"],
+["powder","pó","Pulver","poudre","n","Materiais"],
+["tin","estanho/lata","Zinn","étain","n","Materiais"],
+["nitrogen","nitrogênio","Stickstoff","azote","n","Materiais"],
+["hydrogen","hidrogênio","Wasserstoff","hydrogène","n","Materiais"],
+["oxygen","oxigênio","Sauerstoff","oxygène","n","Materiais"],
+// ── EDUCATION & COMMUNICATION
+["language","idioma/língua","Sprache","langue","n","Comunicação"],
+["word","palavra","Wort","mot","n","Comunicação"],
+["sentence","frase","Satz","phrase","n","Comunicação"],
+["question","pergunta","Frage","question","n","Comunicação"],
+["answer","resposta","Antwort","réponse","n","Comunicação"],
+["meaning","significado","Bedeutung","signification","n","Comunicação"],
+["translation","tradução","Übersetzung","traduction","n","Comunicação"],
+["book","livro","Buch","livre","n","Comunicação"],
+["newspaper","jornal","Zeitung","journal","n","Comunicação"],
+["letter","carta/letra","Brief/Buchstabe","lettre","n","Comunicação"],
+["message","mensagem","Nachricht","message","n","Comunicação"],
+["news","notícia/notícias","Nachrichten","nouvelles","n","Comunicação"],
+["information","informação","Information","information","n","Comunicação"],
+["knowledge","conhecimento","Wissen","connaissance","n","Comunicação"],
+["education","educação","Bildung/Erziehung","éducation","n","Comunicação"],
+["university","universidade","Universität","université","n","Comunicação"],
+["study","estudo","Studie/Studium","étude","n","Comunicação"],
+["class","aula/turma","Klasse","classe","n","Comunicação"],
+["exam","exame/prova","Prüfung","examen","n","Comunicação"],
+["certificate","certificado","Zertifikat","certificat","n","Comunicação"],
+["skill","habilidade","Fähigkeit","compétence","n","Comunicação"],
+["experience","experiência","Erfahrung","expérience","n","Comunicação"],
+["training","treinamento","Training/Ausbildung","formation","n","Comunicação"],
+// ── FEELINGS & MIND
+["feeling","sentimento","Gefühl","sentiment","n","Emoções"],
+["emotion","emoção","Emotion","émotion","n","Emoções"],
+["thought","pensamento","Gedanke","pensée","n","Emoções"],
+["dream","sonho","Traum","rêve","n","Emoções"],
+["hope","esperança","Hoffnung","espoir","n","Emoções"],
+["fear","medo","Angst","peur","n","Emoções"],
+["love","amor","Liebe","amour","n","Emoções"],
+["hate","ódio","Hass","haine","n","Emoções"],
+["joy","alegria","Freude","joie","n","Emoções"],
+["anger","raiva","Wut/Ärger","colère","n","Emoções"],
+["worry","preocupação","Sorge","inquiétude","n","Emoções"],
+["stress","estresse","Stress","stress","n","Emoções"],
+["confidence","confiança","Selbstvertrauen","confiance","n","Emoções"],
+["patience","paciência","Geduld","patience","n","Emoções"],
+["courage","coragem","Mut","courage","n","Emoções"],
+["respect","respeito","Respekt","respect","n","Emoções"],
+["trust","confiança","Vertrauen","confiance","n","Emoções"],
+// ── PREPOSITIONS & CONNECTORS
+["and","e","und","et","conj","Conectores"],
+["or","ou","oder","ou","conj","Conectores"],
+["but","mas","aber","mais","conj","Conectores"],
+["because","porque","weil","parce que","conj","Conectores"],
+["if","se","wenn/falls","si","conj","Conectores"],
+["while","enquanto","während","pendant que","conj","Conectores"],
+["after","depois","nach","après","prep","Conectores"],
+["before","antes","vor/bevor","avant","prep","Conectores"],
+["during","durante","während","pendant","prep","Conectores"],
+["until","até","bis","jusqu'à","prep","Conectores"],
+["since","desde","seit","depuis","prep","Conectores"],
+["in","em/dentro","in","dans/en","prep","Conectores"],
+["on","em/sobre","auf/an","sur","prep","Conectores"],
+["at","em/às","an/bei","à","prep","Conectores"],
+["to","para/a","zu/nach","à/pour","prep","Conectores"],
+["from","de/desde","von/aus","de/depuis","prep","Conectores"],
+["with","com","mit","avec","prep","Conectores"],
+["without","sem","ohne","sans","prep","Conectores"],
+["for","para/por","für","pour","prep","Conectores"],
+["about","sobre","über","à propos de","prep","Conectores"],
+["between","entre","zwischen","entre","prep","Conectores"],
+["above","acima","oben/über","au-dessus","prep","Conectores"],
+["below","abaixo","unten/unter","en dessous","prep","Conectores"],
+["near","perto","nah/bei","près","prep","Conectores"],
+["far","longe","fern/weit","loin","adj","Conectores"],
+["next to","ao lado de","neben","à côté de","prep","Conectores"],
+["also","também","auch","aussi","adv","Conectores"],
+["too","também/demais","auch/zu","aussi/trop","adv","Conectores"],
+["very","muito","sehr","très","adv","Conectores"],
+["really","realmente/muito","wirklich","vraiment","adv","Conectores"],
+["just","apenas/acabei de","gerade/nur","juste/viens de","adv","Conectores"],
+["only","somente/apenas","nur","seulement","adv","Conectores"],
+["almost","quase","fast","presque","adv","Conectores"],
+["enough","suficiente","genug","assez","adv","Conectores"],
+["more","mais","mehr","plus","adv","Conectores"],
+["less","menos","weniger","moins","adv","Conectores"],
+["most","a maioria","meiste","la plupart","adv","Conectores"],
+["so","então/tão","so/also","donc/si","adv","Conectores"],
+["therefore","portanto","daher/also","donc","adv","Conectores"],
+["however","porém/no entanto","jedoch","cependant","adv","Conectores"],
+["although","embora/apesar","obwohl","bien que","conj","Conectores"],
+["maybe","talvez","vielleicht","peut-être","adv","Conectores"],
+["perhaps","talvez","vielleicht","peut-être","adv","Conectores"],
+// ── COLORS
+["color","cor","Farbe","couleur","n","Cores"],
+["red","vermelho","rot","rouge","adj","Cores"],
+["blue","azul","blau","bleu","adj","Cores"],
+["green","verde","grün","vert","adj","Cores"],
+["yellow","amarelo","gelb","jaune","adj","Cores"],
+["orange","laranja","orange","orange","adj","Cores"],
+["purple","roxo/violeta","lila/violett","violet","adj","Cores"],
+["pink","rosa","rosa/pink","rose","adj","Cores"],
+["black","preto","schwarz","noir","adj","Cores"],
+["white","branco","weiß","blanc","adj","Cores"],
+["gray","cinza","grau","gris","adj","Cores"],
+["brown","marrom","braun","marron/brun","adj","Cores"],
+["dark","escuro","dunkel","sombre/foncé","adj","Cores"],
+["light","claro","hell","clair","adj","Cores"],
+// ── SHAPES & MEASURES
+["shape","forma","Form","forme","n","Formas"],
+["circle","círculo","Kreis","cercle","n","Formas"],
+["square","quadrado","Quadrat","carré","n","Formas"],
+["triangle","triângulo","Dreieck","triangle","n","Formas"],
+["rectangle","retângulo","Rechteck","rectangle","n","Formas"],
+["line","linha","Linie","ligne","n","Formas"],
+["point","ponto","Punkt","point","n","Formas"],
+["angle","ângulo","Winkel","angle","n","Formas"],
+["size","tamanho","Größe","taille","n","Formas"],
+["length","comprimento","Länge","longueur","n","Formas"],
+["width","largura","Breite","largeur","n","Formas"],
+["height","altura","Höhe","hauteur","n","Formas"],
+["weight","peso","Gewicht","poids","n","Formas"],
+["speed","velocidade","Geschwindigkeit","vitesse","n","Formas"],
+["distance","distância","Entfernung","distance","n","Formas"],
+["area","área","Fläche","surface","n","Formas"],
+["volume","volume","Volumen","volume","n","Formas"],
+["meter","metro","Meter","mètre","n","Formas"],
+["kilometer","quilômetro","Kilometer","kilomètre","n","Formas"],
+["centimeter","centímetro","Zentimeter","centimètre","n","Formas"],
+["kilogram","quilograma","Kilogramm","kilogramme","n","Formas"],
+["gram","grama","Gramm","gramme","n","Formas"],
+["liter","litro","Liter","litre","n","Formas"],
+["degree","grau","Grad","degré","n","Formas"],
+["percent","por cento","Prozent","pourcent","n","Formas"],
+// ── SPORTS & LEISURE
+["sport","esporte","Sport","sport","n","Lazer"],
+["game","jogo","Spiel","jeu","n","Lazer"],
+["team","equipe/time","Mannschaft","équipe","n","Lazer"],
+["ball","bola","Ball","ballon","n","Lazer"],
+["match","partida/jogo","Spiel/Wettkampf","match","n","Lazer"],
+["music","música","Musik","musique","n","Lazer"],
+["song","canção/música","Lied","chanson","n","Lazer"],
+["film","filme","Film","film","n","Lazer"],
+["art","arte","Kunst","art","n","Lazer"],
+["travel","viajem","Reise","voyage","n","Lazer"],
+["holiday","feriado/férias","Urlaub/Feiertag","vacances/jour férié","n","Lazer"],
+["beach","praia","Strand","plage","n","Lazer"],
+["camera","câmera","Kamera","appareil photo","n","Lazer"],
+["photo","foto","Foto","photo","n","Lazer"],
+["hobby","hobby","Hobby","loisir","n","Lazer"],
+["reading","leitura","Lesen","lecture","n","Lazer"],
+["cooking","culinária","Kochen","cuisine","n","Lazer"],
+["shopping","compras","Einkaufen","shopping","n","Lazer"],
+["concert","show/concerto","Konzert","concert","n","Lazer"],
+["exhibition","exposição","Ausstellung","exposition","n","Lazer"],
+];
+
+// ── CATEGORY LIST
+const CATEGORIES=["Todas",...new Set(RAW.map(w=>w[5]))];
+let currentCat="Todas", searchQuery="", activeLangs=["pt","en","de","fr"];
+let mode="list", wqFrom="en", wqTo="pt";
+let wqScore={correct:0,total:0};
+let PAGE_SIZE=60, currentPage=1;
+
+// ── TTS ROBUSTO ──────────────────────────────────────────────────────────────
+const TTS_CODES={pt:"pt-BR",en:"en-US",de:"de-DE",fr:"fr-FR"};
+const TTS_FALLBACK={
+  pt:["pt-BR","pt-PT","pt"],
+  en:["en-US","en-GB","en-AU","en"],
+  de:["de-DE","de-AT","de-CH","de"],
+  fr:["fr-FR","fr-BE","fr-CA","fr"]
+};
+let ttsVoices=[];
+
+function loadVoices(){
+  const vv=window.speechSynthesis.getVoices();
+  if(vv&&vv.length>0) ttsVoices=[...vv];
+  const el=document.getElementById('ttsStatus');
+  if(el){
+    if(ttsVoices.length>0){el.textContent='🔊 '+ttsVoices.length+' vozes prontas';el.style.color='#4ECDC4';}
+    else{el.textContent='⚠️ Sem vozes de TTS';el.style.color='#f6ad55';}
+  }
+}
+
+function getBestVoice(lang){
+  if(ttsVoices.length===0) loadVoices();
+  const tries=TTS_FALLBACK[lang]||[lang];
+  for(const code of tries){
+    const v=ttsVoices.find(v=>v.lang===code); if(v)return v;
+  }
+  for(const code of tries){
+    const v=ttsVoices.find(v=>v.lang.startsWith(code.split('-')[0])); if(v)return v;
+  }
+  return ttsVoices[0]||null;
+}
+
+function speak(text,lang,btnId){
+  if(!window.speechSynthesis) return;
+  if(btnId){
+    const btn=document.getElementById(btnId);
+    if(btn&&btn.classList.contains('p')){
+      window.speechSynthesis.cancel();
+      btn.classList.remove('p','pt'); btn.textContent='🔊'; return;
+    }
+  }
+  document.querySelectorAll('.spk').forEach(b=>{b.classList.remove('p','pt');b.textContent='🔊';});
+  window.speechSynthesis.cancel();
+
+  const fire=()=>{
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang=TTS_CODES[lang]||'en-US';
+    u.rate=0.82; u.pitch=1; u.volume=1;
+    const v=getBestVoice(lang); if(v) u.voice=v;
+    if(btnId){
+      const btn=document.getElementById(btnId);
+      if(btn){btn.classList.add('p');btn.textContent='⏸';}
+      const done=()=>{const b=document.getElementById(btnId);if(b){b.classList.remove('p','pt');b.textContent='🔊';}};
+      u.onend=done; u.onerror=done;
+    }
+    setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){}},80);
+  };
+
+  if(ttsVoices.length>0){ fire(); }
+  else {
+    let n=0;
+    const poll=setInterval(()=>{
+      loadVoices(); n+=200;
+      if(ttsVoices.length>0||n>3000){clearInterval(poll);fire();}
+    },200);
+  }
+}
+
+function speakWord(text,lang){
+  return new Promise(resolve=>{
+    if(speakAllAbort){resolve();return;}
+    if(!window.speechSynthesis){resolve();return;}
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang=TTS_CODES[lang]||'en-US';
+    u.rate=0.82; u.pitch=1; u.volume=1;
+    const v=getBestVoice(lang); if(v) u.voice=v;
+    u.onend=()=>setTimeout(resolve,200);
+    u.onerror=()=>setTimeout(resolve,200);
+    setTimeout(()=>{try{window.speechSynthesis.speak(u);}catch(e){resolve();}},80);
+  });
+}
+
+window.onload=function(){
+  if(window.speechSynthesis){
+    window.speechSynthesis.onvoiceschanged=loadVoices;
+    loadVoices();
+    setTimeout(loadVoices,600);
+    setTimeout(loadVoices,1800);
+  }
+  buildCats(); buildLangToggles(); buildWQControls();
+  renderList(); updateStats();
+};
+// ── BADGE
+function badge(lang){
+  const c=LANG_COLORS[lang];
+  return `<span class="lang-badge" style="background:${c.bg};color:${c.text};${lang==='de'?'border:1px solid #FFD700':''}">${c.label}</span>`;
+}
+
+// ── LANG TOGGLE
+function buildLangToggles(){
+  ALL_LANGS.forEach(l=>{
+    const btn=document.getElementById('ltog-'+l);
+    const c=LANG_COLORS[l], on=activeLangs.includes(l);
+    btn.style.background=on?c.bg:'rgba(255,255,255,0.07)';
+    btn.style.color=on?c.text:'#888';
+    btn.style.border=`1px solid ${on?c.bg:'#333'}`;
+    btn.style.opacity=on?1:0.5;
+  });
+}
+function toggleLang(l){
+  activeLangs=activeLangs.includes(l)?(activeLangs.length>1?activeLangs.filter(x=>x!==l):activeLangs):[...activeLangs,l];
+  buildLangToggles(); currentPage=1; renderList();
+}
+
+// ── CATS
+function buildCats(){
+  document.getElementById('catScroll').innerHTML=CATEGORIES.map(c=>
+    `<button class="cat-btn ${c===currentCat?'active':''}" onclick="setCat('${c}')" ${c===currentCat?`style="background:${getCatColor(c)};"`:""}>${c}</button>`
+  ).join('');
+}
+function getCatColor(cat){
+  const colors={Essenciais:"#9B72CF",Números:"#63B3ED","Verbos Básicos":"#FF6B35",Pessoas:"#F6AD55",Corpo:"#E8A838","Saúde":"#FC8181",Comida:"#68D391",Casa:"#4ECDC4",Cidade:"#A8DADC","Natureza":"#76E4A7",Trabalho:"#FF6B35",Tecnologia:"#9B72CF",Materiais:"#E8A838","Comunicação":"#63B3ED","Emoções":"#FC8181","Conectores":"#888",Cores:"#E879F9","Formas":"#FBBF24",Lazer:"#34D399",Tempo:"#60A5FA"};
+  return colors[cat]||"#FF6B35";
+}
+function setCat(c){currentCat=c;currentPage=1;buildCats();renderList();updateStats();}
+
+// ── SEARCH
+function onSearch(){searchQuery=document.getElementById('searchBox').value.toLowerCase();currentPage=1;renderList();updateStats();}
+
+// ── FILTER
+function getFiltered(){
+  return RAW.filter(w=>{
+    const catOk=currentCat==="Todas"||w[5]===currentCat;
+    const q=searchQuery;
+    const searchOk=!q||w[0].toLowerCase().includes(q)||w[1].toLowerCase().includes(q)||w[2].toLowerCase().includes(q)||w[3].toLowerCase().includes(q);
+    return catOk&&searchOk;
+  });
+}
+
+// ── RENDER
+function renderList(){
+  const filtered=getFiltered();
+  const paged=filtered.slice(0,currentPage*PAGE_SIZE);
+  const TYPES={n:"subst.",v:"verbo",adj:"adj.",adv:"adv.",prep:"prep.",conj:"conj.",pron:"pron.",num:"núm.",int:"expr."};
+  document.getElementById('wordGrid').innerHTML=paged.map((w,i)=>{
+    const id=`w${i}`;
+    return `<div class="word-card">
+      <div class="word-en">${w[0]} <span class="word-type">${TYPES[w[4]]||w[4]}</span></div>
+      <div class="translations">
+        ${activeLangs.map((l,li)=>{
+          const vals=[w[1],w[2],w[3]];
+          const langIdx=["pt","de","fr"].indexOf(l);
+          const text=l==="en"?w[0]:langIdx>=0?vals[langIdx]:w[1];
+          const sid=`${id}${l}`;
+          return `<div class="trans-row">
+            ${badge(l)}
+            <span class="trans-text">${text}</span>
+            <button class="spk" id="${sid}" onclick="speak('${text.replace(/'/g,"\\'")}','${l}','${sid}')">🔊</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  const loadBtn=document.getElementById('loadMoreBtn');
+  loadBtn.style.display=paged.length<filtered.length?'block':'none';
+  if(paged.length<filtered.length) loadBtn.textContent=`↓ CARREGAR MAIS (${filtered.length-paged.length} restantes)`;
+}
+
+function loadMore(){currentPage++;renderList();}
+
+// ── OUVIR TUDO ────────────────────────────────────────────────────────────────
+let speakAllActive=false;
+let speakAllAbort=false;
+
+function getLangText(w,lang){
+  if(lang==="en")return w[0];
+  if(lang==="pt")return w[1];
+  if(lang==="de")return w[2];
+  if(lang==="fr")return w[3];
+}
+
+// speakWord defined above
+
+async function toggleSpeakAll(){
+  if(speakAllActive){stopAll();return;}
+  speakAllActive=true; speakAllAbort=false;
+  const btn=document.getElementById('speakAllBtn');
+  const stopBtn=document.getElementById('stopAllBtn');
+  btn.textContent='⏸ A reproduzir...'; btn.style.background='rgba(255,107,53,0.35)';
+  stopBtn.style.display='inline-block';
+
+  const selLang=document.getElementById('speakLangSel').value;
+  const filtered=getFiltered();
+  const langs=selLang==='all'?["en","pt","de","fr"]:[selLang];
+
+  for(let wi=0;wi<filtered.length;wi++){
+    if(speakAllAbort)break;
+    const w=filtered[wi];
+    // highlight current card
+    const cards=document.querySelectorAll('.word-card');
+    cards.forEach(c=>c.style.borderColor='');
+    // show progress
+    btn.textContent=`⏸ ${wi+1}/${filtered.length} — ${w[0]}`;
+    for(let li=0;li<langs.length;li++){
+      if(speakAllAbort)break;
+      const text=getLangText(w,langs[li]);
+      await speakWord(text,langs[li]);
+    }
+    // pause between words
+    if(!speakAllAbort) await new Promise(r=>setTimeout(r,300));
+  }
+  stopAll();
+}
+
+function stopAll(){
+  speakAllAbort=true; speakAllActive=false;
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+  const btn=document.getElementById('speakAllBtn');
+  const stopBtn=document.getElementById('stopAllBtn');
+  if(btn){btn.textContent='🔊 Ouvir Tudo';btn.style.background='rgba(255,107,53,0.15)';}
+  if(stopBtn)stopBtn.style.display='none';
+}
+
+function updateStats(){
+  const f=getFiltered();
+  document.getElementById('statsText').textContent=`${f.length} palavras encontradas · ${RAW.length} total`;
+}
+
+// ── MODE
+function setMode(m){
+  mode=m;
+  document.getElementById('modeList').className='mode-btn'+(m==='list'?' active':'');
+  document.getElementById('modeQuiz').className='mode-btn'+(m==='quiz'?' active':'');
+  document.getElementById('listMode').style.display=m==='list'?'block':'none';
+  document.getElementById('quizMode').style.display=m==='quiz'?'block':'none';
+  if(m==='quiz') renderWQuiz();
+}
+
+// ── WORD QUIZ
+function buildWQControls(){
+  document.getElementById('wqFromBtns').innerHTML=ALL_LANGS.map(l=>{
+    const c=LANG_COLORS[l],on=l===wqFrom;
+    return `<button onclick="setWQFrom('${l}')" style="border-radius:20px;padding:2px 10px;cursor:pointer;font-size:11px;font-weight:700;border:1px solid ${on?c.bg:'#444'};background:${on?c.bg:'transparent'};color:${on?c.text:'#666'}">${c.label}</button>`;
+  }).join('');
+  document.getElementById('wqToBtns').innerHTML=ALL_LANGS.filter(l=>l!==wqFrom).map(l=>{
+    const c=LANG_COLORS[l],on=l===wqTo;
+    return `<button onclick="setWQTo('${l}')" style="border-radius:20px;padding:2px 10px;cursor:pointer;font-size:11px;font-weight:700;border:1px solid ${on?c.bg:'#444'};background:${on?c.bg:'transparent'};color:${on?c.text:'#666'}">${c.label}</button>`;
+  }).join('');
+}
+function setWQFrom(l){wqFrom=l;if(l===wqTo)wqTo=ALL_LANGS.find(x=>x!==l);buildWQControls();renderWQuiz();}
+function setWQTo(l){wqTo=l;buildWQControls();renderWQuiz();}
+
+function getWordText(w,lang){
+  if(lang==="en")return w[0];
+  if(lang==="pt")return w[1];
+  if(lang==="de")return w[2];
+  if(lang==="fr")return w[3];
+}
+
+function renderWQuiz(){
+  const pool=getFiltered().length>0?getFiltered():RAW;
+  const word=pool[Math.floor(Math.random()*pool.length)];
+  const correct=getWordText(word,wqTo);
+  const wrongs=shuffle(pool.filter(w=>getWordText(w,wqTo)!==correct)).slice(0,3).map(w=>getWordText(w,wqTo));
+  const opts=shuffle([correct,...wrongs]);
+  const fromText=getWordText(word,wqFrom);
+  const TYPES={n:"substantivo",v:"verbo",adj:"adjetivo",adv:"advérbio",prep:"preposição",conj:"conjunção",pron:"pronome",num:"número",int:"expressão"};
+  window._wqCurrent={word,correct,opts};
+  const c=LANG_COLORS[wqFrom];
+  document.getElementById('wquizArea').innerHTML=`
+    <div class="wquiz-card">
+      <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:6px">
+        ${badge(wqFrom)}
+        <button class="spk" style="width:30px;height:30px;font-size:14px" onclick="speak('${fromText.replace(/'/g,"\\'")}','${wqFrom}','wqspk')" id="wqspk">🔊</button>
+      </div>
+      <div class="wquiz-word">${fromText}</div>
+      <div class="wquiz-type">${TYPES[word[4]]||word[4]} · ${word[5]}</div>
+    </div>
+    <p style="color:#777;font-size:13px;margin-bottom:10px;text-align:center">Como se diz em ${badge(wqTo)}?</p>
+    <div class="wquiz-opts">${opts.map((opt,i)=>`<button class="wquiz-opt" onclick="selectWQ(${i})">${opt}</button>`).join('')}</div>
+    <div style="text-align:center;margin-top:14px" id="wqFB"></div>`;
+  speak(fromText,wqFrom,'wqspk');
+}
+
+function selectWQ(i){
+  const qc=window._wqCurrent; if(!qc)return;
+  const ok=qc.opts[i]===qc.correct;
+  wqScore.correct+=ok?1:0; wqScore.total++;
+  document.getElementById('wqOk').textContent=`✅ ${wqScore.correct}`;
+  document.getElementById('wqTotal').textContent=`📊 ${wqScore.total}`;
+  const pct=document.getElementById('wqPct'); pct.style.display='block';
+  pct.textContent=`🎯 ${Math.round(wqScore.correct/wqScore.total*100)}%`;
+  document.querySelectorAll('.wquiz-opt').forEach((btn,j)=>{
+    btn.onclick=null; btn.style.cursor='default';
+    if(qc.opts[j]===qc.correct) btn.classList.add('correct');
+    else if(j===i) btn.classList.add('wrong');
+  });
+  if(ok) speak(qc.correct,wqTo);
+  document.getElementById('wqFB').innerHTML=`
+    <div style="color:${ok?'#4ECDC4':'#f55'};font-size:15px;margin-bottom:10px">${ok?'✅ Correto!':'❌ Incorreto! Era: <strong style="color:#fff">'+qc.correct+'</strong>'}</div>
+    <button style="background:#FF6B35;color:#000;border:none;border-radius:25px;padding:9px 24px;cursor:pointer;font-weight:800;font-size:13px" onclick="renderWQuiz()">PRÓXIMA →</button>`;
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      console.log('SW registered');
+    }).catch(function(e){console.log('SW error',e);});
+  });
+}
+</script>
+</body>
+</html>

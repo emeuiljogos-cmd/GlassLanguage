@@ -1,0 +1,25 @@
+{
+  "name": "GlassLang - Fábrica de Vidros",
+  "short_name": "GlassLang",
+  "description": "Treino de línguas técnicas para manutenção de fábrica de vidros",
+  "start_url": "GlassLang.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0D0D0F",
+  "theme_color": "#FF6B35",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

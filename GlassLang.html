@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#FF6B35">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GlassLang">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>GlassLang 🏭</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0D0D0F;color:#E8E8E8;font-family:'Trebuchet MS',sans-serif;min-height:100vh;padding-bottom:70px;}
+h1{font-size:20px;font-weight:900;color:#FF6B35;letter-spacing:3px;text-transform:uppercase;}
+.header{background:linear-gradient(135deg,#1a0800 0%,#0D0D0F 70%);border-bottom:1px solid rgba(255,107,53,0.2);padding:18px 14px 12px;}
+.header-sub{font-size:10px;color:#555;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.lang-toggle-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.lang-btn{border-radius:20px;padding:3px 13px;cursor:pointer;font-size:12px;font-weight:700;border:none;transition:all 0.2s;}
+.nav{position:sticky;top:0;background:rgba(13,13,15,0.97);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.07);z-index:10;display:flex;overflow-x:auto;padding:0 4px;}
+.nav-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:12px 10px;cursor:pointer;font-weight:700;font-size:12px;white-space:nowrap;flex:1;transition:all 0.2s;}
+.nav-btn.active{border-bottom:2px solid #FF6B35;color:#FF6B35;}
+.content{max-width:640px;margin:0 auto;padding:16px 12px;}
+.view{display:none;}.view.active{display:block;}
+.section-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.sec-btn{border:none;border-radius:20px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:11px;color:#bbb;background:rgba(255,255,255,0.07);transition:all 0.2s;}
+.phrase-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:13px 14px;margin-bottom:9px;}
+.phrase-lang-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.phrase-text{color:#E0E0E0;font-size:14px;line-height:1.6;font-family:Georgia,serif;margin:0;}
+.lang-badge{border-radius:20px;padding:2px 8px;font-size:11px;font-family:monospace;font-weight:700;letter-spacing:1px;display:inline-block;}
+.speak-btn{border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;flex-shrink:0;padding:0;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);width:28px;height:28px;}
+.speak-btn.playing{background:#FF6B35;border-color:#FF6B35;}
+.speak-btn.playing-teal{background:#4ECDC4;border-color:#4ECDC4;}
+/* MIC BUTTON */
+.mic-btn{border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;padding:0;width:28px;height:28px;border:1px solid rgba(155,114,207,0.5);background:rgba(155,114,207,0.12);color:#9B72CF;transition:all 0.2s;}
+.mic-btn.rec{background:#9B72CF;border-color:#9B72CF;color:#fff;animation:micpulse 0.7s infinite;}
+/* SPEECH PANEL */
+.speech-panel{margin-top:10px;border-radius:10px;padding:12px 14px;background:rgba(155,114,207,0.07);border:1px solid rgba(155,114,207,0.3);display:none;}
+.speech-panel.open{display:block;}
+.speech-status{font-size:12px;color:#9B72CF;margin-bottom:8px;font-weight:600;min-height:18px;}
+.speech-words{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:26px;}
+.sw-pending{border-radius:6px;padding:3px 8px;font-size:13px;font-family:Georgia,serif;background:rgba(255,255,255,0.06);color:#777;border:1px solid #444;}
+.sw-ok{border-radius:6px;padding:3px 8px;font-size:13px;font-family:Georgia,serif;background:rgba(78,205,196,0.15);color:#4ECDC4;border:1px solid #4ECDC4;}
+.sw-err{border-radius:6px;padding:3px 8px;font-size:13px;font-family:Georgia,serif;background:rgba(255,80,80,0.15);color:#ff6b6b;border:1px solid #ff5555;}
+.speech-bar-wrap{background:rgba(255,255,255,0.06);border-radius:4px;height:6px;margin-bottom:8px;overflow:hidden;}
+.speech-bar{height:6px;border-radius:4px;width:0%;transition:width 0.5s,background 0.3s;}
+.speech-score{font-size:13px;font-weight:700;margin-bottom:10px;min-height:18px;}
+.speech-action-row{display:flex;gap:8px;flex-wrap:wrap;}
+.sab{border:none;border-radius:20px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:700;transition:all 0.2s;}
+.row-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.score-box{border-radius:8px;padding:4px 13px;font-size:13px;}
+.score-green{background:rgba(78,205,196,0.12);border:1px solid #4ECDC4;color:#4ECDC4;}
+.score-orange{background:rgba(255,107,53,0.12);border:1px solid #FF6B35;color:#FF6B35;}
+.score-gray{background:rgba(255,255,255,0.04);border:1px solid #444;color:#888;}
+.quiz-question{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+.quiz-qtext{color:#fff;font-size:16px;line-height:1.7;font-family:Georgia,serif;margin:10px 0 6px;}
+.quiz-section{color:#555;font-size:11px;margin:0;}
+.option-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.opt-btn{flex:1;border-radius:10px;padding:11px 14px;cursor:pointer;text-align:left;font-size:14px;font-family:Georgia,serif;line-height:1.5;transition:all 0.2s;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#ccc;}
+.opt-btn.correct{background:rgba(78,205,196,0.15);border:1px solid #4ECDC4;color:#4ECDC4;}
+.opt-btn.wrong{background:rgba(255,80,80,0.15);border:1px solid #f55;color:#f55;}
+.big-btn{border:none;border-radius:25px;padding:10px 24px;cursor:pointer;font-weight:800;font-size:14px;letter-spacing:1px;}
+.btn-orange{background:#FF6B35;color:#000;}
+.btn-teal{background:#4ECDC4;color:#000;}
+.btn-gray{background:rgba(255,255,255,0.07);color:#aaa;border:1px solid #444!important;}
+.center{text-align:center;margin-top:16px;}
+.dialog-line{margin-bottom:13px;display:flex;flex-direction:column;transition:opacity 0.4s;}
+.dialog-line.hidden{opacity:0.14;}
+.bubble{border-radius:12px;padding:12px 15px;max-width:90%;}
+.bubble-a{background:rgba(255,107,53,0.09);border:1px solid rgba(255,107,53,0.25);align-self:flex-start;}
+.bubble-b{background:rgba(78,205,196,0.09);border:1px solid rgba(78,205,196,0.25);align-self:flex-end;}
+.speaker-label{font-size:11px;color:#666;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.speaker-tag{border-radius:20px;padding:1px 9px;font-weight:800;font-size:11px;}
+.tag-a{background:#FF6B35;color:#000;}
+.tag-b{background:#4ECDC4;color:#000;}
+.fill-ref{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+.fill-q{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.3);border-radius:12px;padding:13px 16px;margin:12px 0 14px;}
+.fill-qtext{color:#fff;font-size:15px;font-family:Georgia,serif;line-height:1.7;margin:8px 0 0;}
+.fill-row{display:flex;gap:8px;}
+.fill-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid #555;border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;font-family:Georgia,serif;outline:none;}
+.fill-submit{background:#FF6B35;color:#000;border:none;border-radius:10px;padding:11px 18px;cursor:pointer;font-weight:800;font-size:18px;}
+.fill-next-btn{background:#4ECDC4;color:#000;border:none;border-radius:10px;padding:11px 18px;cursor:pointer;font-weight:800;font-size:18px;}
+.fill-result{margin-top:10px;padding:10px 14px;border-radius:10px;}
+.result-ok{background:rgba(78,205,196,0.1);border:1px solid #4ECDC4;color:#4ECDC4;}
+.result-fail{background:rgba(255,80,80,0.1);border:1px solid #f55;color:#f55;}
+.flash-card{border-radius:18px;padding:26px 20px;min-height:175px;transition:all 0.3s;position:relative;cursor:pointer;user-select:none;}
+.flash-front{background:rgba(255,107,53,0.07);border:2px solid #FF6B35;}
+.flash-back{background:rgba(78,205,196,0.07);border:2px solid #4ECDC4;}
+.flash-hint{position:absolute;top:12px;right:14px;font-size:10px;color:#555;}
+.flash-sec{position:absolute;top:12px;left:14px;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;color:#000;}
+.flash-content{margin-top:28px;}
+.flash-nav{display:flex;gap:12px;justify-content:center;margin-top:16px;align-items:center;}
+.flash-count{color:#555;font-size:13px;}
+.config-bar{background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.config-label{color:#888;font-size:12px;}
+.mini-btn{border-radius:20px;padding:2px 10px;cursor:pointer;font-size:11px;font-weight:700;border:1px solid #444;background:transparent;color:#666;}
+.play-all-row{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.listen-card{background:rgba(155,114,207,0.08);border:2px solid #9B72CF;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;}
+.listen-big-btn{width:80px;height:80px;border-radius:50%;border:3px solid #9B72CF;background:rgba(155,114,207,0.15);font-size:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;transition:all 0.2s;}
+.listen-big-btn.playing{background:#9B72CF;animation:micpulse 0.8s infinite;}
+.listen-opts{display:flex;flex-direction:column;gap:8px;}
+.listen-opt{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;cursor:pointer;color:#ccc;font-size:14px;font-family:Georgia,serif;text-align:left;transition:all 0.2s;}
+.listen-opt.correct{background:rgba(78,205,196,0.15);border:1px solid #4ECDC4;color:#4ECDC4;}
+.listen-opt.wrong{background:rgba(255,80,80,0.15);border:1px solid #f55;color:#f55;}
+.listen-transcript{background:rgba(255,255,255,0.04);border:1px solid rgba(155,114,207,0.3);border-radius:10px;padding:12px 16px;margin-top:12px;color:#ccc;font-family:Georgia,serif;font-size:14px;line-height:1.6;}
+.convo-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.convo-header{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);}
+.convo-title{font-weight:700;font-size:14px;color:#E8E8E8;}
+.convo-sub{font-size:11px;color:#666;margin-top:2px;}
+.convo-body{padding:12px 14px;display:none;}
+.convo-body.open{display:block;}
+.convo-line{margin-bottom:12px;display:flex;flex-direction:column;}
+.convo-bubble{border-radius:10px;padding:10px 14px;max-width:88%;font-size:13px;line-height:1.6;}
+.convo-bubble-a{background:rgba(255,107,53,0.09);border:1px solid rgba(255,107,53,0.2);align-self:flex-start;}
+.convo-bubble-b{background:rgba(78,205,196,0.09);border:1px solid rgba(78,205,196,0.2);align-self:flex-end;}
+.convo-speaker{font-size:10px;color:#666;margin-bottom:3px;}
+.convo-play-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);}
+@keyframes micpulse{0%,100%{box-shadow:0 0 0 0 rgba(155,114,207,0.6)}50%{box-shadow:0 0 0 8px rgba(155,114,207,0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+button:active{transform:scale(0.96)}
+input::placeholder{color:#444}
+::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span style="font-size:24px">🏭</span>
+    <div>
+      <h1>GlassLang</h1>
+      <div class="header-sub">FÁBRICA DE VIDROS · 🔊 ÁUDIO · 🎤 TESTE ORAL · 4 LÍNGUAS</div>
+      <a href="GlassLang_Palavras.html" style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:rgba(155,114,207,0.2);border:1px solid #9B72CF;border-radius:20px;padding:3px 13px;color:#9B72CF;font-size:11px;font-weight:700;text-decoration:none">📖 1500 PALAVRAS →</a>
+    </div>
+  </div>
+  <div class="lang-toggle-row" id="langToggles"></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="switchView('vocab',this)">📚 Vocab</button>
+  <button class="nav-btn" onclick="switchView('flash',this)">🃏 Flash</button>
+  <button class="nav-btn" onclick="switchView('quiz',this)">🎯 Quiz</button>
+  <button class="nav-btn" onclick="switchView('listen',this)">🎧 Escuta</button>
+  <button class="nav-btn" onclick="switchView('dialog',this)">💬 Diálogo</button>
+  <button class="nav-btn" onclick="switchView('convo',this)">👷 Conversas</button>
+  <button class="nav-btn" onclick="switchView('fill',this)">✏️ Preencher</button>
+</div>
+
+<div class="content">
+
+<!-- VOCAB -->
+<div class="view active" id="view-vocab">
+  <div class="section-tabs" id="vocabTabs"></div>
+  <div class="row-bar">
+    <span style="color:#666;font-size:12px" id="vocabCount"></span>
+    <button class="big-btn btn-orange" style="padding:5px 14px;font-size:12px" onclick="speakAll()">🔊 Ouvir Tudo</button>
+    <span style="color:#666;font-size:11px">· 🎤 = Teste oral</span>
+  </div>
+  <div id="vocabPhrases"></div>
+</div>
+
+<!-- FLASH -->
+<div class="view" id="view-flash">
+  <div class="config-bar">
+    <span class="config-label">Frente:</span>
+    <div id="flashFrontBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div class="config-bar">
+    <span class="config-label">Verso:</span>
+    <div id="flashBackBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div id="flashCard" class="flash-card flash-front" onclick="flipCard()"></div>
+  <div class="flash-nav">
+    <button class="big-btn btn-gray" style="padding:7px 18px;font-size:13px" onclick="prevCard()">← Anterior</button>
+    <span class="flash-count" id="flashCount">1/84</span>
+    <button class="big-btn btn-orange" style="padding:7px 18px;font-size:13px" onclick="nextCard()">Próximo →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="view" id="view-quiz">
+  <div class="config-bar">
+    <span class="config-label">De:</span>
+    <div id="quizFromBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <span class="config-label">→ Para:</span>
+    <div id="quizToBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div class="row-bar">
+    <div class="score-box score-green" id="qScoreOk">✅ 0</div>
+    <div class="score-box score-gray" id="qScoreTotal">📊 0</div>
+    <div class="score-box score-orange" id="qScorePct" style="display:none">🎯 0%</div>
+  </div>
+  <div id="quizArea"></div>
+</div>
+
+<!-- LISTEN -->
+<div class="view" id="view-listen">
+  <div class="config-bar">
+    <span class="config-label">🎧 Ouvir em:</span>
+    <div id="listenLangBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <span class="config-label">· Identificar em:</span>
+    <div id="listenTargetBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div class="row-bar">
+    <div class="score-box score-green" id="lScoreOk">✅ 0</div>
+    <div class="score-box score-gray" id="lScoreTotal">📊 0</div>
+    <div class="score-box score-orange" id="lScorePct" style="display:none">🎯 0%</div>
+  </div>
+  <div id="listenArea"></div>
+</div>
+
+<!-- DIALOG -->
+<div class="view" id="view-dialog">
+  <div class="section-tabs" id="dialogTabs"></div>
+  <div class="play-all-row">
+    <span style="color:#666;font-size:11px">🔊 Ouvir em:</span>
+    <div id="dialogPlayBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div id="dialogLines"></div>
+  <div class="center" id="dialogControls"></div>
+</div>
+
+<!-- CONVERSAS -->
+<div class="view" id="view-convo">
+  <div style="background:rgba(255,107,53,0.07);border:1px solid rgba(255,107,53,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+    <p style="color:#FF6B35;font-weight:700;font-size:13px;margin-bottom:4px">👷 Colegas no Brasil 🇧🇷</p>
+    <p style="color:#888;font-size:12px;line-height:1.6">Conversas do dia a dia entre colegas europeus que chegam trabalhar na fábrica no Brasil.</p>
+  </div>
+  <div id="convoList"></div>
+</div>
+
+<!-- FILL -->
+<div class="view" id="view-fill">
+  <div class="config-bar">
+    <span class="config-label">Preencher em:</span>
+    <div id="fillLangBtns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+  <div class="row-bar">
+    <div class="score-box score-green" id="fScoreOk">✅ 0/0</div>
+    <div class="score-box score-orange" id="fScorePct" style="display:none">🎯 0%</div>
+  </div>
+  <div id="fillRefs"></div>
+  <div class="fill-q" id="fillQ">
+    <div id="fillQLang"></div>
+    <p class="fill-qtext" id="fillQText"></p>
+  </div>
+  <div class="fill-row">
+    <input class="fill-input" id="fillInput" placeholder="Digite a palavra em falta..." onkeydown="if(event.key==='Enter')checkFill()">
+    <button class="fill-submit" id="fillSubmit" onclick="checkFill()">✓</button>
+  </div>
+  <div class="fill-result" id="fillResult" style="display:none"></div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════════
+const LANG_CODES={pt:"pt-BR",en:"en-GB",de:"de-DE",fr:"fr-FR"};
+const LANG_COLORS={
+  pt:{bg:"#006400",text:"#fff",label:"🇧🇷 PT"},
+  en:{bg:"#012169",text:"#fff",label:"🇬🇧 EN"},
+  de:{bg:"#1a1a00",text:"#FFD700",label:"🇩🇪 DE"},
+  fr:{bg:"#002395",text:"#fff",label:"🇫🇷 FR"}
+};
+const ALL_LANGS=["pt","en","de","fr"];
+
+const SECTIONS={
+  forno:{label:{pt:"Forno",en:"Furnace",de:"Ofen",fr:"Four"},icon:"🔥",color:"#FF6B35",phrases:[
+    {pt:"A temperatura do forno está acima do limite máximo.",en:"The furnace temperature is above the maximum limit.",de:"Die Ofentemperatur liegt über dem Höchstwert.",fr:"La température du four est au-dessus de la limite maximale."},
+    {pt:"Verificar a vedação da porta do forno.",en:"Check the furnace door seal.",de:"Die Ofentürdichtung überprüfen.",fr:"Vérifier le joint de la porte du four."},
+    {pt:"O queimador lateral necessita de calibração.",en:"The side burner needs calibration.",de:"Der Seitenbrenner muss kalibriert werden.",fr:"Le brûleur latéral nécessite un étalonnage."},
+    {pt:"Substituir os refratários danificados da abóbada.",en:"Replace the damaged crown refractories.",de:"Die beschädigten Gewölberefraktäre ersetzen.",fr:"Remplacer les réfractaires endommagés de la voûte."},
+    {pt:"Controle do nível de vidro fundido no forno.",en:"Control of the molten glass level in the furnace.",de:"Kontrolle des Schmelzglaspegels im Ofen.",fr:"Contrôle du niveau de verre fondu dans le four."},
+    {pt:"Inspecionar a bomba de circulação de combustível.",en:"Inspect the fuel circulation pump.",de:"Die Kraftstoffumwälzpumpe inspizieren.",fr:"Inspecter la pompe de circulation de combustible."},
+    {pt:"O regenerador direito apresenta entupimento parcial.",en:"The right regenerator shows partial blockage.",de:"Der rechte Regenerator zeigt eine teilweise Verstopfung.",fr:"Le régénérateur droit présente un colmatage partiel."},
+    {pt:"Pressão de alimentação de gás natural abaixo do mínimo.",en:"Natural gas supply pressure below minimum.",de:"Erdgasversorgungsdruck unter dem Minimum.",fr:"Pression d'alimentation en gaz naturel en dessous du minimum."},
+    {pt:"Inspeção endoscópica das câmaras de combustão.",en:"Endoscopic inspection of combustion chambers.",de:"Endoskopische Inspektion der Verbrennungskammern.",fr:"Inspection endoscopique des chambres de combustion."},
+    {pt:"Monitorar a razão ar e combustível nos queimadores.",en:"Monitor the air and fuel ratio in the burners.",de:"Das Luft und Kraftstoff Verhältnis überwachen.",fr:"Surveiller le rapport air et combustible dans les brûleurs."},
+    {pt:"Troca das válvulas de inversão do regenerador.",en:"Replacement of regenerator reversal valves.",de:"Austausch der Umkehrventile des Regenerators.",fr:"Remplacement des vannes d'inversion du régénérateur."},
+    {pt:"Controlar a pressão interna do forno para evitar infiltrações.",en:"Control the internal furnace pressure to avoid infiltrations.",de:"Den Innendruck des Ofens kontrollieren.",fr:"Contrôler la pression interne du four pour éviter les infiltrations."}
+  ]},
+  sidewall:{label:{pt:"Side Wall",en:"Side Wall",de:"Seitenwand",fr:"Paroi Latérale"},icon:"🧱",color:"#E8A838",phrases:[
+    {pt:"Fissuramento detectado na parede lateral do forno.",en:"Cracking detected on the furnace side wall.",de:"Rissbildung an der Ofenseitenwand festgestellt.",fr:"Fissuration détectée sur la paroi latérale du four."},
+    {pt:"Medir a espessura residual dos blocos refratários.",en:"Measure the residual thickness of the refractory blocks.",de:"Die Restdicke der Feuerfestblöcke messen.",fr:"Mesurer l'épaisseur résiduelle des blocs réfractaires."},
+    {pt:"Aplicar argamassa refratária nas juntas da parede.",en:"Apply refractory mortar to the wall joints.",de:"Feuerfestmörtel auf die Wandfugen auftragen.",fr:"Appliquer du mortier réfractaire sur les joints de paroi."},
+    {pt:"O resfriamento da parede lateral está insuficiente.",en:"The side wall cooling is insufficient.",de:"Die Seitenwandkühlung ist unzureichend.",fr:"Le refroidissement de la paroi latérale est insuffisant."},
+    {pt:"Inspeção visual da corrosão por álcalis na parede.",en:"Visual inspection of alkali corrosion on the wall.",de:"Sichtprüfung auf Laugenkorrosion an der Wand.",fr:"Inspection visuelle de la corrosion alcaline sur la paroi."},
+    {pt:"Os blocos de AZS apresentam desgaste excessivo.",en:"The AZS blocks show excessive wear.",de:"Die AZS-Blöcke weisen übermäßigen Verschleiß auf.",fr:"Les blocs AZS présentent une usure excessive."},
+    {pt:"Verificar o sistema de resfriamento por água da parede.",en:"Check the wall water cooling system.",de:"Das Wasserkühlsystem der Wand überprüfen.",fr:"Vérifier le système de refroidissement par eau de la paroi."},
+    {pt:"O ponto quente da parede atingiu trezentos e oitenta graus.",en:"The wall hot spot reached three hundred and eighty degrees.",de:"Der Wandheißpunkt hat dreihundertachtzig Grad erreicht.",fr:"Le point chaud de la paroi a atteint trois cent quatre-vingts degrés."},
+    {pt:"Realizar termografia infravermelha na parede lateral.",en:"Perform infrared thermography on the side wall.",de:"Infrarot-Thermografie an der Seitenwand durchführen.",fr:"Réaliser une thermographie infrarouge sur la paroi latérale."},
+    {pt:"Reparação a quente com massa de tamponamento.",en:"Hot repair with plugging mass.",de:"Heißreparatur mit Stopfmasse.",fr:"Réparation à chaud avec masse de bouchage."}
+  ]},
+  banho:{label:{pt:"Banho Flutuante",en:"Float Bath",de:"Floatbad",fr:"Bain Flottant"},icon:"🌊",color:"#4ECDC4",phrases:[
+    {pt:"O nível de estanho no banho flutuante está correto.",en:"The tin level in the float bath is correct.",de:"Der Zinnstand im Floatbad ist korrekt.",fr:"Le niveau d'étain dans le bain flottant est correct."},
+    {pt:"Temperatura de saída do vidro do banho seiscentos graus.",en:"Glass exit temperature from the bath six hundred degrees.",de:"Glasaustrittstemperatur sechshundert Grad.",fr:"Température de sortie du verre six cents degrés."},
+    {pt:"Verificar a atmosfera protetora de nitrogênio e hidrogênio.",en:"Check the protective nitrogen and hydrogen atmosphere.",de:"Die Schutzatmosphäre aus Stickstoff und Wasserstoff prüfen.",fr:"Vérifier l'atmosphère protectrice d'azote et d'hydrogène."},
+    {pt:"Substituição do rolo de extração do banho.",en:"Replacement of the bath extraction roller.",de:"Austausch der Badextraktionswalze.",fr:"Remplacement du rouleau d'extraction du bain."},
+    {pt:"Limpeza do topo do estanho para remover óxidos.",en:"Cleaning the tin top to remove oxides.",de:"Reinigung der Zinnoberfläche zur Oxidentfernung.",fr:"Nettoyage du dessus de l'étain pour éliminer les oxydes."},
+    {pt:"Ajustar a pressão positiva dentro do banho flutuante.",en:"Adjust positive pressure inside the float bath.",de:"Den Überdruck im Floatbad einstellen.",fr:"Ajuster la pression positive à l'intérieur du bain flottant."},
+    {pt:"Análise química do estanho com teor de oxigênio elevado.",en:"Chemical analysis of tin with high oxygen content.",de:"Chemische Analyse des Zinns mit hohem Sauerstoffgehalt.",fr:"Analyse chimique de l'étain avec teneur élevée en oxygène."},
+    {pt:"Os rolos de grafite do banho precisam de lubrificação.",en:"The bath graphite rollers need lubrication.",de:"Die Graphitrollen des Bades brauchen Schmierung.",fr:"Les rouleaux en graphite du bain ont besoin de lubrification."},
+    {pt:"Manter o ponto de orvalho abaixo de menos trinta graus.",en:"Keep the dew point below minus thirty degrees.",de:"Den Taupunkt unter minus dreißig Grad halten.",fr:"Maintenir le point de rosée en dessous de moins trente degrés."},
+    {pt:"Controlar a largura da fita de vidro no banho.",en:"Control the width of the glass ribbon in the bath.",de:"Die Breite des Glasbandes im Bad kontrollieren.",fr:"Contrôler la largeur du ruban de verre dans le bain."},
+    {pt:"Verificar a estanqueidade do capô de entrada do banho.",en:"Check the tightness of the bath entry hood.",de:"Die Dichtigkeit der Badeingangshaube prüfen.",fr:"Vérifier l'étanchéité de la hotte d'entrée du bain."},
+    {pt:"Substituir as resistências de aquecimento do banho.",en:"Replace the bath heating resistances.",de:"Die Heizwiderstände des Bades ersetzen.",fr:"Remplacer les résistances de chauffage du bain."}
+  ]},
+  arca:{label:{pt:"Arca de Recozimento",en:"Annealing Lehr",de:"Entspannungsofen",fr:"Arche de Recuisson"},icon:"❄️",color:"#A8DADC",phrases:[
+    {pt:"O gradiente de temperatura da arca está fora de especificação.",en:"The lehr temperature gradient is out of specification.",de:"Der Temperaturgradient liegt außerhalb der Spezifikation.",fr:"Le gradient de température de l'arche est hors spécification."},
+    {pt:"Realizar manutenção nos rolos transportadores da arca.",en:"Perform maintenance on the lehr conveyor rollers.",de:"Wartung der Entspannungsofentransportrollen durchführen.",fr:"Effectuer la maintenance des rouleaux transporteurs de l'arche."},
+    {pt:"Tensões residuais no vidro detectadas por polariscópio.",en:"Residual stresses in the glass detected by polariscope.",de:"Restspannungen im Glas durch Polariskop erkannt.",fr:"Contraintes résiduelles dans le verre détectées par polariscope."},
+    {pt:"Velocidade da esteira transportadora oito metros por minuto.",en:"Conveyor belt speed eight meters per minute.",de:"Geschwindigkeit des Förderbandes acht Meter pro Minute.",fr:"Vitesse du convoyeur huit mètres par minute."},
+    {pt:"Verificar o funcionamento dos queimadores de recozimento.",en:"Check the operation of the annealing burners.",de:"Den Betrieb der Entspannungsbrenner prüfen.",fr:"Vérifier le fonctionnement des brûleurs de recuisson."},
+    {pt:"Calibrar os termopares de controle da arca.",en:"Calibrate the lehr control thermocouples.",de:"Die Steuerungsthermosensoren kalibrieren.",fr:"Étalonner les thermocouples de contrôle de l'arche."},
+    {pt:"Verificar o alinhamento dos rolos para evitar desvio do vidro.",en:"Check roller alignment to avoid glass deviation.",de:"Die Rollenausrichtung prüfen.",fr:"Vérifier l'alignement des rouleaux pour éviter la déviation du verre."},
+    {pt:"A zona de resfriamento rápido apresenta irregularidade.",en:"The rapid cooling zone shows irregularity.",de:"Die Schnellkühlzone zeigt Unregelmäßigkeiten.",fr:"La zone de refroidissement rapide présente une irrégularité."},
+    {pt:"Lubrificar os mancais dos rolos com graxa de alta temperatura.",en:"Lubricate roller bearings with high temperature grease.",de:"Rollenlager mit Hochtemperaturfett schmieren.",fr:"Lubrifier les paliers de rouleaux avec une graisse haute température."},
+    {pt:"Inspeção do sistema de ventilação forçada da arca.",en:"Inspection of the lehr forced ventilation system.",de:"Inspektion des Zwangsbelüftungssystems.",fr:"Inspection du système de ventilation forcée de l'arche."}
+  ]},
+  geral:{label:{pt:"Manutenção Geral",en:"General Maintenance",de:"Allgemeine Wartung",fr:"Maintenance Générale"},icon:"🔧",color:"#9B72CF",phrases:[
+    {pt:"Parar a linha de produção por manutenção preventiva.",en:"Stop the production line for preventive maintenance.",de:"Die Produktionslinie zur vorbeugenden Wartung anhalten.",fr:"Arrêter la ligne de production pour maintenance préventive."},
+    {pt:"Verificar o aperto dos parafusos de fixação estrutural.",en:"Check the tightening of structural fixing bolts.",de:"Die Anzugsmomente der Strukturbefestigungsschrauben prüfen.",fr:"Vérifier le serrage des boulons de fixation structurale."},
+    {pt:"Lubrificar os mancais dos rolos transportadores.",en:"Lubricate the conveyor roller bearings.",de:"Die Lagerstellen der Transportrollen schmieren.",fr:"Lubrifier les paliers des rouleaux transporteurs."},
+    {pt:"Registrar anomalia no livro de manutenção.",en:"Record the anomaly in the maintenance log.",de:"Anomalie im Wartungsprotokoll erfassen.",fr:"Consigner l'anomalie dans le registre de maintenance."},
+    {pt:"Usar equipamento de proteção individual obrigatório.",en:"Use mandatory personal protective equipment.",de:"Vorgeschriebene persönliche Schutzausrüstung verwenden.",fr:"Utiliser l'équipement de protection individuelle obligatoire."},
+    {pt:"Calibrar os sensores de pressão e temperatura.",en:"Calibrate pressure and temperature sensors.",de:"Druck und Temperatursensoren kalibrieren.",fr:"Étalonner les capteurs de pression et de température."},
+    {pt:"Plano de manutenção preventiva semanal atualizado.",en:"Weekly preventive maintenance plan updated.",de:"Wöchentlicher vorbeugender Wartungsplan aktualisiert.",fr:"Plan de maintenance préventive hebdomadaire mis à jour."},
+    {pt:"Pedido urgente de peça de reposição para o almoxarifado.",en:"Urgent spare part request to the warehouse.",de:"Dringender Ersatzteilantrag ans Lager.",fr:"Demande de pièce de rechange urgente au magasin."},
+    {pt:"Análise de vibração realizada nos motores principais.",en:"Vibration analysis performed on main motors.",de:"Schwingungsanalyse an den Hauptmotoren durchgeführt.",fr:"Analyse de vibration effectuée sur les moteurs principaux."},
+    {pt:"Verificar o nível de óleo dos redutores de velocidade.",en:"Check the oil level of the speed reducers.",de:"Den Ölstand der Getriebe überprüfen.",fr:"Vérifier le niveau d'huile des réducteurs de vitesse."},
+    {pt:"Intervenção de manutenção corretiva na esteira.",en:"Corrective maintenance intervention on the conveyor.",de:"Korrektive Wartungsintervention am Förderband.",fr:"Intervention de maintenance corrective sur le convoyeur."},
+    {pt:"Ensaio de ultrassom nas soldas das estruturas metálicas.",en:"Ultrasonic testing on metallic structure welds.",de:"Ultraschallprüfung an Schweißnähten der Metallstrukturen.",fr:"Contrôle par ultrasons sur les soudures des structures métalliques."}
+  ]},
+  corte:{label:{pt:"Corte e Inspeção",en:"Cutting and Inspection",de:"Schneiden und Prüfung",fr:"Coupe et Inspection"},icon:"🪟",color:"#63B3ED",phrases:[
+    {pt:"Ajustar a pressão da roda de corte do vidro.",en:"Adjust the pressure of the glass cutting wheel.",de:"Den Druck des Glasschneidrads einstellen.",fr:"Ajuster la pression de la roue de coupe du verre."},
+    {pt:"A linha de corte não está perpendicular à fita de vidro.",en:"The cut line is not perpendicular to the glass ribbon.",de:"Die Schnittlinie ist nicht senkrecht zum Glasband.",fr:"La ligne de coupe n'est pas perpendiculaire au ruban de verre."},
+    {pt:"Inspeção automática de defeitos por câmara de visão.",en:"Automatic defect inspection by vision camera.",de:"Automatische Fehlerinspektion durch Kamerasystem.",fr:"Inspection automatique des défauts par caméra de vision."},
+    {pt:"Verificar o alinhamento do sistema de quebra do vidro.",en:"Check the alignment of the glass breaking system.",de:"Die Ausrichtung des Glasbrechers überprüfen.",fr:"Vérifier l'alignement du système de brisage du verre."},
+    {pt:"Calibrar o micrômetro de medição de espessura.",en:"Calibrate the thickness measurement micrometer.",de:"Das Dickenmessungs Mikrometer kalibrieren.",fr:"Étalonner le micromètre de mesure d'épaisseur."},
+    {pt:"Rejeitar os painéis com inclusões ou bolhas.",en:"Reject panels with inclusions or bubbles.",de:"Platten mit Einschlüssen oder Blasen aussortieren.",fr:"Rejeter les panneaux avec des inclusions ou des bulles."},
+    {pt:"Verificar a perpendicularidade do corte transversal.",en:"Check the perpendicularity of the cross cut.",de:"Die Rechtwinkligkeit des Querschnitts überprüfen.",fr:"Vérifier la perpendicularité de la coupe transversale."},
+    {pt:"Manutenção do sistema de óleo de lubrificação do corte.",en:"Maintenance of the cutting lubrication oil system.",de:"Wartung des Schmierölsystems für den Schnitt.",fr:"Maintenance du système d'huile de lubrification de coupe."}
+  ]},
+  seguranca:{label:{pt:"Segurança",en:"Safety",de:"Sicherheit",fr:"Sécurité"},icon:"⚠️",color:"#F6AD55",phrases:[
+    {pt:"Zona de perigo temperatura superior a mil e duzentos graus.",en:"Danger zone temperature above one thousand two hundred degrees.",de:"Gefahrenzone Temperatur über eintausendzweihundert Grad.",fr:"Zone de danger température supérieure à mille deux cents degrés."},
+    {pt:"Usar proteção respiratória na zona de mistura de gases.",en:"Use respiratory protection in the gas mixing zone.",de:"Atemschutz in der Gasmischzone verwenden.",fr:"Utiliser une protection respiratoire dans la zone de mélange de gaz."},
+    {pt:"Bloqueio e etiquetagem antes de qualquer intervenção.",en:"Lockout and tagout before any intervention.",de:"Verriegeln und Kennzeichnen vor jedem Eingriff.",fr:"Consignation et étiquetage avant toute intervention."},
+    {pt:"Atenção ao risco de queimaduras com vidro derretido.",en:"Beware of burn risk from molten glass.",de:"Vorsicht bei Verbrennungsgefahr durch geschmolzenes Glas.",fr:"Attention au risque de brûlures avec le verre fondu."},
+    {pt:"Verificar os detectores de monóxido de carbono antes do turno.",en:"Check carbon monoxide detectors before the shift.",de:"Kohlenmonoxiddetektoren vor der Schicht überprüfen.",fr:"Vérifier les détecteurs de monoxyde de carbone avant le poste."},
+    {pt:"Saída de emergência desobstruída e sinalizada.",en:"Emergency exit unobstructed and signposted.",de:"Notausgang frei und gekennzeichnet.",fr:"Sortie de secours dégagée et signalisée."},
+    {pt:"Uso obrigatório de viseira térmica nesta área.",en:"Mandatory use of thermal visor in this area.",de:"Pflichtgebrauch von Thermoschutzvisier in diesem Bereich.",fr:"Port obligatoire de visière thermique dans cette zone."},
+    {pt:"Procedimento de evacuação em caso de fuga de gás.",en:"Evacuation procedure in case of gas leak.",de:"Evakuierungsverfahren bei Gasaustritt.",fr:"Procédure d'évacuation en cas de fuite de gaz."}
+  ]}
+};
+
+const DIALOGS=[
+  {title:{pt:"Relatório de Turno",en:"Shift Report",de:"Schichtbericht",fr:"Rapport de Poste"},section:"geral",lines:[
+    {sp:"A",role:{pt:"Chefe de Turno",en:"Shift Leader",de:"Schichtleiter",fr:"Chef d'équipe"},pt:"Qual é o estado atual do forno neste momento?",en:"What is the current state of the furnace right now?",de:"Wie ist der aktuelle Zustand des Ofens?",fr:"Quel est l'état actuel du four en ce moment ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"A temperatura está estável mas detetei uma fissura na parede lateral.",en:"The temperature is stable but I detected a crack on the side wall.",de:"Die Temperatur ist stabil aber ich habe einen Riss an der Seitenwand entdeckt.",fr:"La température est stable mais j'ai détecté une fissure sur la paroi latérale."},
+    {sp:"A",role:{pt:"Chefe de Turno",en:"Shift Leader",de:"Schichtleiter",fr:"Chef d'équipe"},pt:"Qual é a extensão da fissura? Precisamos parar a produção?",en:"What is the extent of the crack? Do we need to stop production?",de:"Wie groß ist der Riss? Müssen wir die Produktion stoppen?",fr:"Quelle est l'étendue de la fissure ? Devons-nous arrêter la production ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"A fissura tem quinze centímetros. Podemos continuar mas precisamos de intervenção urgente.",en:"The crack is fifteen centimetres. We can continue but we need urgent intervention.",de:"Der Riss ist fünfzehn Zentimeter lang. Wir brauchen dringende Maßnahmen.",fr:"La fissure fait quinze centimètres. Une intervention urgente est nécessaire."},
+    {sp:"A",role:{pt:"Chefe de Turno",en:"Shift Leader",de:"Schichtleiter",fr:"Chef d'équipe"},pt:"Acione a equipe de manutenção e registre a anomalia no sistema.",en:"Alert the maintenance team and log the anomaly in the system.",de:"Alarmieren Sie das Wartungsteam und erfassen Sie die Anomalie.",fr:"Alertez l'équipe de maintenance et consignez l'anomalie."},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"Entendido. Já enviei o relatório e a equipe está a caminho.",en:"Understood. I have already sent the report and the team is on the way.",de:"Verstanden. Der Bericht wurde gesendet und das Team ist unterwegs.",fr:"Compris. Le rapport a été envoyé et l'équipe est en route."}
+  ]},
+  {title:{pt:"Problema no Banho",en:"Bath Problem",de:"Badproblem",fr:"Problème de Bain"},section:"banho",lines:[
+    {sp:"A",role:{pt:"Operador",en:"Operator",de:"Bediener",fr:"Opérateur"},pt:"O alarme do banho flutuante foi ativado. O que aconteceu?",en:"The float bath alarm was triggered. What happened?",de:"Der Floatbad Alarm wurde ausgelöst. Was ist passiert?",fr:"L'alarme du bain flottant s'est déclenchée. Que s'est-il passé ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"A pressão positiva caiu abaixo do mínimo. Há entrada de ar no banho.",en:"The positive pressure dropped below the minimum. There is air ingress in the bath.",de:"Der Überdruck ist unter das Minimum gefallen. Es gibt Lufteintrag ins Bad.",fr:"La pression positive est tombée en dessous du minimum. Il y a une entrée d'air dans le bain."},
+    {sp:"A",role:{pt:"Operador",en:"Operator",de:"Bediener",fr:"Opérateur"},pt:"Qual é o nível de hidrogênio medido agora?",en:"What is the hydrogen level measured now?",de:"Wie hoch ist der Wasserstoffgehalt jetzt?",fr:"Quel est le niveau d'hydrogène mesuré maintenant ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"O nível está em dois e meio por cento. Vou verificar os selos de entrada imediatamente.",en:"The level is at two point five percent. I will check the entry seals immediately.",de:"Der Gehalt liegt bei zwei Komma fünf Prozent. Ich überprüfe die Einlassdichtungen sofort.",fr:"Le niveau est à deux virgule cinq pourcent. Je vais vérifier les joints d'entrée immédiatement."},
+    {sp:"A",role:{pt:"Operador",en:"Operator",de:"Bediener",fr:"Opérateur"},pt:"Aumentar o fluxo de nitrogênio para compensar até a reparação.",en:"Increase the nitrogen flow to compensate until the repair.",de:"Den Stickstoffstrom bis zur Reparatur erhöhen.",fr:"Augmenter le débit d'azote jusqu'à la réparation."}
+  ]},
+  {title:{pt:"Manutenção da Arca",en:"Lehr Maintenance",de:"Ofenwartung",fr:"Maintenance Arche"},section:"arca",lines:[
+    {sp:"A",role:{pt:"Engenheiro",en:"Engineer",de:"Ingenieur",fr:"Ingénieur"},pt:"Os valores de tensão residual do vidro estão elevados. Qual é a causa?",en:"The residual stress values of the glass are high. What is the cause?",de:"Die Restspannungswerte des Glases sind hoch. Was ist die Ursache?",fr:"Les valeurs de contraintes résiduelles du verre sont élevées. Quelle est la cause ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"O gradiente de temperatura na zona três da arca está irregular.",en:"The temperature gradient in zone three of the lehr is irregular.",de:"Der Temperaturgradient in Zone drei ist unregelmäßig.",fr:"Le gradient de température dans la zone trois de l'arche est irrégulier."},
+    {sp:"A",role:{pt:"Engenheiro",en:"Engineer",de:"Ingenieur",fr:"Ingénieur"},pt:"Que medidas você tomou para corrigir o problema?",en:"What measures did you take to correct the problem?",de:"Welche Maßnahmen haben Sie ergriffen?",fr:"Quelles mesures avez-vous prises pour corriger le problème ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"Calibrei os termopares e ajustei os queimadores dessa zona.",en:"I calibrated the thermocouples and adjusted the burners in that zone.",de:"Ich habe die Thermosensoren kalibriert und die Brenner eingestellt.",fr:"J'ai étalonné les thermocouples et ajusté les brûleurs de cette zone."},
+    {sp:"A",role:{pt:"Engenheiro",en:"Engineer",de:"Ingenieur",fr:"Ingénieur"},pt:"Monitore os valores a cada trinta minutos e registre tudo.",en:"Monitor the values every thirty minutes and record everything.",de:"Überwachen Sie die Werte alle dreißig Minuten und erfassen Sie alles.",fr:"Surveillez les valeurs toutes les trente minutes et enregistrez tout."}
+  ]},
+  {title:{pt:"Segurança e Emergência",en:"Safety and Emergency",de:"Sicherheit und Notfall",fr:"Sécurité et Urgence"},section:"seguranca",lines:[
+    {sp:"A",role:{pt:"Resp. Segurança",en:"Safety Officer",de:"Sicherheitsbeauftragter",fr:"Responsable Sécurité"},pt:"Foi detectada uma fuga de gás na conduta principal. Qual é o procedimento?",en:"A gas leak was detected in the main duct. What is the procedure?",de:"Im Hauptkanal wurde ein Gasleck festgestellt. Was ist das Verfahren?",fr:"Une fuite de gaz a été détectée dans le conduit principal. Quelle est la procédure ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"Evacuar a zona imediatamente e cortar o fornecimento de gás.",en:"Evacuate the area immediately and cut the gas supply.",de:"Den Bereich sofort evakuieren und die Gasversorgung unterbrechen.",fr:"Évacuer la zone immédiatement et couper l'alimentation en gaz."},
+    {sp:"A",role:{pt:"Resp. Segurança",en:"Safety Officer",de:"Sicherheitsbeauftragter",fr:"Responsable Sécurité"},pt:"Você já ativou o alarme geral de emergência?",en:"Have you already activated the general emergency alarm?",de:"Haben Sie den allgemeinen Notfallalarm bereits ausgelöst?",fr:"Avez-vous déjà activé l'alarme d'urgence générale ?"},
+    {sp:"B",role:{pt:"Técnico",en:"Technician",de:"Techniker",fr:"Technicien"},pt:"Sim o alarme foi ativado e o Corpo de Bombeiros foi acionado.",en:"Yes the alarm was activated and the fire brigade was contacted.",de:"Ja der Alarm wurde ausgelöst und die Feuerwehr wurde kontaktiert.",fr:"Oui l'alarme a été activée et les pompiers ont été contactés."},
+    {sp:"A",role:{pt:"Resp. Segurança",en:"Safety Officer",de:"Sicherheitsbeauftragter",fr:"Responsable Sécurité"},pt:"Certifique-se que todos estejam usando o equipamento de proteção.",en:"Make sure everyone is wearing personal protective equipment.",de:"Stellen Sie sicher dass alle Schutzausrüstung tragen.",fr:"Assure-toi que tout le monde porte l'équipement de protection individuelle."}
+  ]}
+];
+
+const CONVOS=[
+  {title:"👋 Primeiro dia na fábrica",subtitle:"Apresentação entre colegas",emoji:"🏭",lines:[
+    {sp:"A",name:{pt:"Klaus (alemão)",en:"Klaus (German)",de:"Klaus (Deutsch)",fr:"Klaus (Allemand)"},pt:"Olá! Meu nome é Klaus. Sou o novo técnico alemão. Prazer em conhecer você!",en:"Hello! My name is Klaus. I am the new German technician. Nice to meet you!",de:"Hallo! Mein Name ist Klaus. Ich bin der neue deutsche Techniker. Schön Sie kennenzulernen!",fr:"Bonjour ! Je m'appelle Klaus. Je suis le nouveau technicien allemand. Enchanté de vous rencontrer !"},
+    {sp:"B",name:{pt:"Carlos (brasileiro)",en:"Carlos (Brazilian)",de:"Carlos (Brasilianer)",fr:"Carlos (Brésilien)"},pt:"Seja bem-vindo Klaus! Eu sou o Carlos técnico de manutenção. Bem-vindo ao Brasil!",en:"Welcome Klaus! I am Carlos maintenance technician. Welcome to Brazil!",de:"Willkommen Klaus! Ich bin Carlos Wartungstechniker. Willkommen in Brasilien!",fr:"Bienvenue Klaus ! Je suis Carlos technicien de maintenance. Bienvenue au Brésil !"},
+    {sp:"A",name:{pt:"Klaus",en:"Klaus",de:"Klaus",fr:"Klaus"},pt:"Obrigado! É minha primeira vez no Brasil. A fábrica é muito grande!",en:"Thank you! It is my first time in Brazil. The factory is very big!",de:"Danke! Es ist mein erstes Mal in Brasilien. Die Fabrik ist sehr groß!",fr:"Merci ! C'est ma première fois au Brésil. L'usine est très grande !"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Sim produzimos dois mil toneladas de vidro por dia. Posso te mostrar a planta?",en:"Yes we produce two thousand tons of glass per day. Can I show you around the plant?",de:"Ja wir produzieren zweitausend Tonnen Glas pro Tag. Darf ich Ihnen die Anlage zeigen?",fr:"Oui nous produisons deux mille tonnes de verre par jour. Je peux vous faire visiter l'usine ?"},
+    {sp:"A",name:{pt:"Klaus",en:"Klaus",de:"Klaus",fr:"Klaus"},pt:"Com certeza! Mas primeiro você fala inglês ou alemão? Meu português ainda é básico.",en:"Of course! But first do you speak English or German? My Portuguese is still basic.",de:"Natürlich! Aber zuerst sprechen Sie Englisch oder Deutsch? Mein Portugiesisch ist noch grundlegend.",fr:"Bien sûr ! Mais d'abord vous parlez anglais ou allemand ? Mon portugais est encore basique."},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Falo um pouco de inglês. Juntos a gente se entende! Vamos lá.",en:"I speak a little English. Together we will understand each other! Let us go.",de:"Ich spreche ein bisschen Englisch. Zusammen verstehen wir uns! Los geht's.",fr:"Je parle un peu anglais. Ensemble on se comprendra ! Allons-y."}
+  ]},
+  {title:"☕ Pausa para o café",subtitle:"Conversa informal no refeitório",emoji:"☕",lines:[
+    {sp:"A",name:{pt:"Pierre (francês)",en:"Pierre (French)",de:"Pierre (Franzose)",fr:"Pierre (Français)"},pt:"Bom dia Carlos! Como você está? Você tomou café?",en:"Good morning Carlos! How are you? Have you had coffee?",de:"Guten Morgen Carlos! Wie geht es Ihnen? Haben Sie Kaffee getrunken?",fr:"Bonjour Carlos ! Comment allez-vous ? Vous avez pris un café ?"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Bom dia Pierre! Estou bem obrigado. O café aqui é forte cuidado!",en:"Good morning Pierre! I am fine thank you. The coffee here is strong be careful!",de:"Guten Morgen Pierre! Mir geht es gut danke. Der Kaffee hier ist stark Vorsicht!",fr:"Bonjour Pierre ! Je vais bien merci. Le café ici est fort attention !"},
+    {sp:"A",name:{pt:"Pierre",en:"Pierre",de:"Pierre",fr:"Pierre"},pt:"Haha perfeito! Na França também gostamos de café forte. Você já almoçou aqui?",en:"Haha perfect! In France we also like strong coffee. Have you had lunch here yet?",de:"Haha perfekt! In Frankreich mögen wir auch starken Kaffee. Haben Sie hier schon zu Mittag gegessen?",fr:"Haha parfait ! En France on aime aussi le café fort. Vous avez déjà déjeuné ici ?"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Sim! O almoço aqui é muito bom. Arroz feijão carne você vai gostar!",en:"Yes! Lunch here is very good. Rice beans meat you will love it!",de:"Ja! Das Mittagessen hier ist sehr gut. Reis Bohnen Fleisch das werden Sie mögen!",fr:"Oui ! Le déjeuner ici est très bon. Riz haricots viande vous allez adorer !"},
+    {sp:"A",name:{pt:"Pierre",en:"Pierre",de:"Pierre",fr:"Pierre"},pt:"Ótimo! A que horas é o próximo turno? Preciso voltar ao forno às duas horas.",en:"Great! What time is the next shift? I need to be back at the furnace at two o'clock.",de:"Toll! Um wie viel Uhr ist die nächste Schicht? Ich muss um zwei Uhr am Ofen sein.",fr:"Super ! À quelle heure est le prochain poste ? Je dois retourner au four à deux heures."},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"O turno começa às duas e meia. Você tem trinta minutos ainda. Relaxa!",en:"The shift starts at half past two. You still have thirty minutes. Relax!",de:"Die Schicht beginnt um halb drei. Sie haben noch dreißig Minuten. Entspannen Sie sich!",fr:"Le poste commence à deux heures et demie. Vous avez encore trente minutes. Détendez-vous !"}
+  ]},
+  {title:"🔧 Passagem de turno",subtitle:"Início de turno entre colegas",emoji:"🕐",lines:[
+    {sp:"A",name:{pt:"Hans (turno saindo)",en:"Hans (leaving shift)",de:"Hans (Schichtende)",fr:"Hans (fin de poste)"},pt:"Carlos bom dia! Aqui está o relatório do turno da noite.",en:"Carlos good morning! Here is the night shift report.",de:"Carlos guten Morgen! Hier ist der Nachtschichtbericht.",fr:"Carlos bonjour ! Voici le rapport du poste de nuit."},
+    {sp:"B",name:{pt:"Carlos (turno entrando)",en:"Carlos (incoming shift)",de:"Carlos (Schichtbeginn)",fr:"Carlos (prise de poste)"},pt:"Bom dia Hans! Tudo tranquilo essa noite?",en:"Good morning Hans! Everything quiet tonight?",de:"Guten Morgen Hans! War heute Nacht alles ruhig?",fr:"Bonjour Hans ! Tout s'est bien passé cette nuit ?"},
+    {sp:"A",name:{pt:"Hans",en:"Hans",de:"Hans",fr:"Hans"},pt:"Quase tudo. Tivemos um alarme no banho às três da manhã mas já resolvemos.",en:"Almost everything. We had an alarm in the bath at three in the morning but it is already resolved.",de:"Fast alles. Wir hatten um drei Uhr morgens einen Alarm im Bad aber es ist bereits gelöst.",fr:"Presque tout. On a eu une alarme dans le bain à trois heures du matin mais c'est déjà résolu."},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Entendi. E a temperatura do forno está estável?",en:"I see. And is the furnace temperature stable?",de:"Ich verstehe. Und ist die Ofentemperatur stabil?",fr:"Je vois. Et la température du four est-elle stable ?"},
+    {sp:"A",name:{pt:"Hans",en:"Hans",de:"Hans",fr:"Hans"},pt:"Sim dentro do padrão. Bom turno Carlos!",en:"Yes within standard. Good shift Carlos!",de:"Ja im Normbereich. Gute Schicht Carlos!",fr:"Oui dans la norme. Bon poste Carlos !"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Obrigado Hans! Vai descansar. Até amanhã!",en:"Thank you Hans! Go rest. See you tomorrow!",de:"Danke Hans! Geh dich ausruhen. Bis morgen!",fr:"Merci Hans ! Allez vous reposer. À demain !"}
+  ]},
+  {title:"🍖 Saída depois do trabalho",subtitle:"Colegas combinando o jantar",emoji:"🌆",lines:[
+    {sp:"A",name:{pt:"Marie (francesa)",en:"Marie (French)",de:"Marie (Französin)",fr:"Marie (Française)"},pt:"Pessoal alguém quer jantar juntos hoje? Quero conhecer a comida brasileira!",en:"Everyone does anyone want to have dinner together today? I want to try Brazilian food!",de:"Leute möchte jemand heute zusammen abendessen? Ich möchte brasilianisches Essen kennenlernen!",fr:"Tout le monde quelqu'un veut dîner ensemble aujourd'hui ? Je veux découvrir la cuisine brésilienne !"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Boa ideia! Conheço um churrasco aqui perto. A carne é excelente!",en:"Great idea! I know a barbecue place nearby. The meat is excellent!",de:"Gute Idee! Ich kenne ein Grillrestaurant in der Nähe. Das Fleisch ist ausgezeichnet!",fr:"Bonne idée ! Je connais un barbecue près d'ici. La viande est excellente !"},
+    {sp:"A",name:{pt:"Marie",en:"Marie",de:"Marie",fr:"Marie"},pt:"Churrasco! Já ouvi falar muito. Klaus e James vocês vêm também?",en:"Churrasco! I have heard a lot about it. Klaus and James are you coming too?",de:"Churrasco! Ich habe viel davon gehört. Klaus und James kommen Sie auch?",fr:"Churrasco ! J'en ai beaucoup entendu parler. Klaus et James vous venez aussi ?"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Às dezenove horas na saída da fábrica. Posso pedir o Uber para todo mundo.",en:"At seven in the evening at the factory exit. I can order an Uber for everyone.",de:"Um neunzehn Uhr am Fabrikausgang. Ich kann für alle ein Uber bestellen.",fr:"À dix-neuf heures à la sortie de l'usine. Je peux commander un Uber pour tout le monde."},
+    {sp:"A",name:{pt:"Marie",en:"Marie",de:"Marie",fr:"Marie"},pt:"Perfeito! Como se diz obrigado em português mesmo?",en:"Perfect! How do you say thank you in Portuguese again?",de:"Perfekt! Wie sagt man eigentlich Danke auf Portugiesisch?",fr:"Parfait ! Comment dit-on merci en portugais déjà ?"},
+    {sp:"B",name:{pt:"Carlos",en:"Carlos",de:"Carlos",fr:"Carlos"},pt:"Se você é mulher diz obrigada! Se é homem obrigado! E de nada é a resposta.",en:"If you are a woman you say obrigada! If you are a man obrigado! And de nada is the answer.",de:"Wenn Sie eine Frau sind sagen Sie obrigada! Wenn ein Mann obrigado! Und de nada ist die Antwort.",fr:"Si vous êtes une femme vous dites obrigada ! Si c'est un homme obrigado ! Et de nada est la réponse."}
+  ]}
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════════
+let activeLangs=["pt","en","de","fr"];
+let activeSection="forno";
+let allPhrases=[];
+let quizFromLang="pt",quizToLang="en";
+let quizScore={correct:0,total:0};
+let listenFromLang="pt",listenTargetLang="en";
+let listenScore={correct:0,total:0};
+let listenCurrent=null;
+let activeDialogIdx=0,revealedLines=[0],dialogShowAll=false;
+let fillLang="en",fillScore={correct:0,total:0},fillExercise=null,fillChecked=false;
+let flashDeck=[],flashIdx=0,flashFlipped=false,flashFrontLang="pt",flashBackLangs=["en","de","fr"];
+let openConvoIdx=-1;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TTS — ROBUST
+// ═══════════════════════════════════════════════════════════════════════════════
+const TTS_FALLBACK={
+  pt:["pt-BR","pt-PT","pt"],
+  en:["en-GB","en-US","en-AU","en"],
+  de:["de-DE","de-AT","de-CH","de"],
+  fr:["fr-FR","fr-BE","fr-CA","fr"]
+};
+let _voices=[];
+function _loadV(){var v=window.speechSynthesis.getVoices();if(v&&v.length>0)_voices=Array.from(v);}
+function _getVoice(lang){
+  if(!_voices.length)_loadV();
+  var tries=TTS_FALLBACK[lang]||[lang];
+  for(var i=0;i<tries.length;i++){var v=_voices.find(function(v){return v.lang===tries[i];});if(v)return v;}
+  for(var i=0;i<tries.length;i++){var p=tries[i].split("-")[0];var v=_voices.find(function(v){return v.lang.indexOf(p)===0;});if(v)return v;}
+  return _voices[0]||null;
+}
+function speak(text,lang,cb){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  function fire(){
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang=LANG_CODES[lang]||"en-US";
+    u.rate=0.83;u.pitch=1;u.volume=1;
+    var v=_getVoice(lang);if(v)u.voice=v;
+    if(cb){u.onend=cb;u.onerror=cb;}
+    setTimeout(function(){try{window.speechSynthesis.speak(u);}catch(e){}},80);
+  }
+  if(_voices.length>0){fire();}
+  else{var n=0;var t=setInterval(function(){_loadV();n+=200;if(_voices.length>0||n>3000){clearInterval(t);fire();}},200);}
+}
+function speakBtn(text,lang,btnId,cls){
+  document.querySelectorAll(".speak-btn").forEach(function(b){b.classList.remove("playing","playing-teal");b.textContent="🔊";});
+  var btn=document.getElementById(btnId);
+  if(btn){btn.classList.add(cls||"playing");btn.textContent="⏸";}
+  speak(text,lang,function(){var b=document.getElementById(btnId);if(b){b.classList.remove("playing","playing-teal");b.textContent="🔊";}});
+}
+function makeSB(text,lang,id,cls){
+  var t=text.replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;");
+  return "<button class='speak-btn' id='"+id+"' onclick=\"speakBtn('"+t+"','"+lang+"','"+id+"','"+( cls||"playing")+"')\">🔊</button>";
+}
+function badge(lang){
+  var c=LANG_COLORS[lang];
+  return "<span class='lang-badge' style='background:"+c.bg+";color:"+c.text+(lang==="de"?";border:1px solid #FFD700":"")+"'>"+c.label+"</span>";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPEECH RECOGNITION — TESTE ORAL
+// ═══════════════════════════════════════════════════════════════════════════════
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+var srObj=null;
+var srRunning=false;
+var activePanelId=null;
+
+var SR_LANGS={pt:"pt-BR",en:"en-US",de:"de-DE",fr:"fr-FR"};
+
+function normWord(s){
+  return s.toLowerCase()
+    .replace(/[àáâãä]/g,"a").replace(/[èéêë]/g,"e")
+    .replace(/[ìíîï]/g,"i").replace(/[òóôõö]/g,"o")
+    .replace(/[ùúûü]/g,"u").replace(/[ç]/g,"c").replace(/[ñ]/g,"n")
+    .replace(/[^a-z0-9 ]/g,"").trim();
+}
+function lev(a,b){
+  var m=a.length,n=b.length,d=[];
+  for(var i=0;i<=m;i++){d[i]=[i];}
+  for(var j=0;j<=n;j++){d[0][j]=j;}
+  for(var i=1;i<=m;i++)for(var j=1;j<=n;j++)
+    d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  return d[m][n];
+}
+function wordMatch(orig,spoken){
+  var o=normWord(orig);
+  for(var i=0;i<spoken.length;i++){
+    var s=normWord(spoken[i]);
+    if(!s)continue;
+    if(s===o)return true;
+    if(o.length>2&&(s.indexOf(o)>=0||o.indexOf(s)>=0))return true;
+    if(o.length>=4&&lev(s,o)<=1)return true;
+  }
+  return false;
+}
+function calcScore(phrase,spokenWords){
+  var words=phrase.split(/\s+/).filter(Boolean);
+  var ok=0;
+  words.forEach(function(w){if(wordMatch(w,spokenWords))ok++;});
+  return Math.round(ok/words.length*100);
+}
+function renderPhraseWords(pid,phrase,spokenWords){
+  var el=document.getElementById("wds_"+pid);
+  if(!el)return;
+  var words=phrase.split(/\s+/).filter(Boolean);
+  el.innerHTML=words.map(function(w){
+    var cls=spokenWords.length===0?"sw-pending":(wordMatch(w,spokenWords)?"sw-ok":"sw-err");
+    return "<span class='"+cls+"'>"+w+"</span>";
+  }).join("");
+}
+
+function makeMicBtn(pid){
+  return "<button class='mic-btn' id='mic_"+pid+"' onclick=\"toggleSpeech('"+pid+"')\" title='Teste oral'>🎤</button>";
+}
+function makeSpeechPanel(pid,text,lang){
+  return "<div class='speech-panel' id='panel_"+pid+"'>"
+    +"<div class='speech-status' id='sts_"+pid+"'>Toque em 🎙️ para começar</div>"
+    +"<div class='speech-words' id='wds_"+pid+"'></div>"
+    +"<div class='speech-bar-wrap'><div class='speech-bar' id='bar_"+pid+"'></div></div>"
+    +"<div class='speech-score' id='scr_"+pid+"'></div>"
+    +"<div class='speech-action-row'>"
+    +"<button class='sab' id='recbtn_"+pid+"' style='background:#9B72CF;color:#fff' onclick=\"doRec('"+pid+"','"+text.replace(/'/g,"\\'")+"','"+lang+"')\">🎙️ Falar</button>"
+    +"<button class='sab' style='background:rgba(255,255,255,0.08);color:#aaa;border:1px solid #444' onclick=\"closePanel('"+pid+"')\">✕ Fechar</button>"
+    +"</div></div>";
+}
+
+function toggleSpeech(pid){
+  if(!SR){
+    alert("Reconhecimento de voz não suportado.\nUse o Chrome no Android.");
+    return;
+  }
+  var panel=document.getElementById("panel_"+pid);
+  if(!panel)return;
+  if(panel.classList.contains("open")){
+    closePanel(pid);
+  } else {
+    if(activePanelId&&activePanelId!==pid)closePanel(activePanelId);
+    activePanelId=pid;
+    panel.classList.add("open");
+  }
+}
+function closePanel(pid){
+  stopSR();
+  var panel=document.getElementById("panel_"+pid);
+  if(panel)panel.classList.remove("open");
+  var mic=document.getElementById("mic_"+pid);
+  if(mic){mic.classList.remove("rec");mic.textContent="🎤";}
+  if(activePanelId===pid)activePanelId=null;
+}
+function stopSR(){
+  srRunning=false;
+  if(srObj){try{srObj.stop();}catch(e){}srObj=null;}
+}
+function doRec(pid,text,lang){
+  if(srRunning){stopSR();
+    var rb=document.getElementById("recbtn_"+pid);
+    if(rb){rb.textContent="🎙️ Falar";rb.style.background="#9B72CF";}
+    var mic=document.getElementById("mic_"+pid);
+    if(mic){mic.classList.remove("rec");mic.textContent="🎤";}
+    document.getElementById("sts_"+pid).textContent="Parado. Toque em 🎙️ para tentar.";
+    return;
+  }
+  srObj=new SR();
+  srObj.lang=SR_LANGS[lang]||"en-US";
+  srObj.continuous=false;
+  srObj.interimResults=true;
+  srObj.maxAlternatives=3;
+
+  srRunning=true;
+  var mic=document.getElementById("mic_"+pid);
+  if(mic){mic.classList.add("rec");mic.textContent="⏺";}
+  var rb=document.getElementById("recbtn_"+pid);
+  if(rb){rb.textContent="⏹ Parar";rb.style.background="#f55";}
+  document.getElementById("sts_"+pid).textContent="🔴 A ouvir... fale agora!";
+  // reset
+  renderPhraseWords(pid,text,[]);
+  document.getElementById("scr_"+pid).textContent="";
+  var bar=document.getElementById("bar_"+pid);
+  if(bar){bar.style.width="0%";bar.style.background="#444";}
+
+  srObj.onresult=function(e){
+    var allWords=[];
+    Array.from(e.results).forEach(function(r){
+      for(var a=0;a<r.length;a++){
+        r[a].transcript.trim().split(/\s+/).forEach(function(w){if(w)allWords.push(w);});
+      }
+    });
+    renderPhraseWords(pid,text,allWords);
+    var last=e.results[e.results.length-1];
+    if(last.isFinal){
+      var score=calcScore(text,allWords);
+      showScore(pid,score,text,lang);
+      stopSR();
+      if(mic){mic.classList.remove("rec");mic.textContent="🎤";}
+      if(rb){rb.textContent="🔄 Tentar de novo";rb.style.background="#9B72CF";}
+      var msg=score===100?"🏆 Perfeito!":score>=70?"👍 Muito bom!":score>=40?"💪 Continue tentando!":"🔁 Tente novamente";
+      document.getElementById("sts_"+pid).textContent=msg;
+    }
+  };
+  srObj.onerror=function(e){
+    stopSR();
+    if(mic){mic.classList.remove("rec");mic.textContent="🎤";}
+    if(rb){rb.textContent="🎙️ Falar";rb.style.background="#9B72CF";}
+    var msgs={"not-allowed":"❌ Microfone bloqueado. Permita o acesso nas configurações.","no-speech":"🔇 Nenhuma fala detectada. Tente novamente.","network":"📡 Erro de rede.","aborted":"Cancelado."};
+    document.getElementById("sts_"+pid).textContent=msgs[e.error]||("❌ Erro: "+e.error);
+  };
+  srObj.onend=function(){srRunning=false;if(mic)mic.classList.remove("rec");};
+  try{srObj.start();}catch(e){srRunning=false;document.getElementById("sts_"+pid).textContent="❌ Não foi possível iniciar. Use Chrome.";}
+}
+function showScore(pid,score,text,lang){
+  var color=score===100?"#4ECDC4":score>=70?"#68D391":score>=40?"#F6AD55":"#FC8181";
+  var bar=document.getElementById("bar_"+pid);
+  if(bar){bar.style.width=score+"%";bar.style.background=color;}
+  var scr=document.getElementById("scr_"+pid);
+  var em=score===100?"🏆":score>=70?"✅":score>=40?"🔶":"❌";
+  if(scr)scr.innerHTML="<span style='color:"+color+"'>"+em+" Pontuação: "+score+"%</span>";
+  if(score<100)setTimeout(function(){speak(text,lang);},700);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+window.onload=function(){
+  if(window.speechSynthesis){
+    window.speechSynthesis.onvoiceschanged=_loadV;
+    _loadV();setTimeout(_loadV,600);setTimeout(_loadV,1800);
+  }
+  allPhrases=Object.entries(SECTIONS).flatMap(function(e){return e[1].phrases.map(function(p){return Object.assign({},p,{sectionKey:e[0]});});});
+  flashDeck=shuffle(allPhrases.slice());
+  buildLangToggles();renderVocab();
+  buildFlashControls();renderFlash();
+  buildQuizControls();renderQuiz();
+  buildListenControls();renderListen();
+  buildDialogTabs();renderDialog();
+  renderConvos();
+  buildFillControls();renderFill();
+};
+function shuffle(a){return a.sort(function(){return Math.random()-0.5;});}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LANG TOGGLES
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildLangToggles(){
+  document.getElementById("langToggles").innerHTML=ALL_LANGS.map(function(l){
+    var c=LANG_COLORS[l],on=activeLangs.indexOf(l)>=0;
+    return "<button class='lang-btn' onclick=\"toggleLang('"+l+"')\" style='background:"+(on?c.bg:"rgba(255,255,255,0.05)")+";color:"+(on?c.text:"#444")+";border:1px solid "+(on?c.bg:"#2a2a2a")+";opacity:"+(on?1:0.4)+"'>"+c.label+"</button>";
+  }).join("");
+}
+function toggleLang(lang){
+  if(activeLangs.indexOf(lang)>=0){if(activeLangs.length>1)activeLangs=activeLangs.filter(function(l){return l!==lang;});}
+  else activeLangs.push(lang);
+  buildLangToggles();renderVocab();renderFlash();renderDialog();renderFill();renderConvos();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════════════════════
+function switchView(v,btn){
+  document.querySelectorAll(".view").forEach(function(el){el.classList.remove("active");});
+  document.querySelectorAll(".nav-btn").forEach(function(el){el.classList.remove("active");});
+  document.getElementById("view-"+v).classList.add("active");
+  btn.classList.add("active");
+  if(window.speechSynthesis)window.speechSynthesis.cancel();
+  stopSR();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VOCAB — with Mic button per phrase
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderVocab(){
+  var sec=SECTIONS[activeSection];
+  document.getElementById("vocabTabs").innerHTML=Object.entries(SECTIONS).map(function(e){
+    var k=e[0],s=e[1];
+    return "<button class='sec-btn' onclick=\"setSection('"+k+"')\" style='"+(k===activeSection?"background:"+s.color+";color:#000":"")+"'>"+s.icon+" "+s.label.pt+"</button>";
+  }).join("");
+  document.getElementById("vocabCount").textContent=sec.phrases.length+" frases";
+  document.getElementById("vocabPhrases").innerHTML=sec.phrases.map(function(p,i){
+    var inner=activeLangs.map(function(l,li){
+      var pid="p"+i+"_"+l;
+      var mb=li<activeLangs.length-1?"margin-bottom:10px":"";
+      var row="<div class='phrase-lang-row'>"+badge(l)+makeSB(p[l],l,"spk_"+pid)+makeMicBtn(pid)+"</div>";
+      var txt="<p class='phrase-text'>"+p[l]+"</p>";
+      var panel=makeSpeechPanel(pid,p[l],l);
+      return "<div style='"+mb+"'>"+row+txt+panel+"</div>";
+    }).join("");
+    return "<div class='phrase-card'>"+inner+"</div>";
+  }).join("");
+}
+function setSection(k){activeSection=k;renderVocab();}
+function speakAll(){
+  var items=SECTIONS[activeSection].phrases.flatMap(function(p){return activeLangs.map(function(l){return{text:p[l],lang:l};});});
+  var i=0;function next(){if(i>=items.length)return;speak(items[i].text,items[i].lang,function(){i++;setTimeout(next,500);});}next();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FLASHCARD
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildFlashControls(){
+  document.getElementById("flashFrontBtns").innerHTML=ALL_LANGS.map(function(l){
+    var c=LANG_COLORS[l],on=l===flashFrontLang;
+    return "<button class='mini-btn' onclick=\"setFlashFront('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+  renderFlashBack();
+}
+function renderFlashBack(){
+  document.getElementById("flashBackBtns").innerHTML=ALL_LANGS.filter(function(l){return l!==flashFrontLang;}).map(function(l){
+    var c=LANG_COLORS[l],on=flashBackLangs.indexOf(l)>=0;
+    return "<button class='mini-btn' onclick=\"toggleFlashBack('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+";opacity:"+(on?1:0.4)+"'>"+c.label+"</button>";
+  }).join("");
+}
+function setFlashFront(l){flashFrontLang=l;flashFlipped=false;buildFlashControls();renderFlash();}
+function toggleFlashBack(l){
+  if(flashBackLangs.indexOf(l)>=0){if(flashBackLangs.length>1)flashBackLangs=flashBackLangs.filter(function(x){return x!==l;});}
+  else flashBackLangs.push(l);
+  renderFlashBack();renderFlash();
+}
+function renderFlash(){
+  var card=flashDeck[flashIdx%flashDeck.length];
+  var sec=SECTIONS[card.sectionKey];
+  var el=document.getElementById("flashCard");
+  el.className="flash-card "+(flashFlipped?"flash-back":"flash-front");
+  var hint=(flashFlipped?"VERSO":"FRENTE")+" · toque para virar";
+  var secSpan="<span class='flash-sec' style='background:"+sec.color+"'>"+sec.icon+" "+sec.label.pt+"</span>";
+  if(!flashFlipped){
+    el.innerHTML="<span class='flash-hint'>"+hint+"</span>"+secSpan
+      +"<div class='flash-content'>"
+      +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px'>"+badge(flashFrontLang)+makeSB(card[flashFrontLang],flashFrontLang,"fsb0")+"</div>"
+      +"<p style='margin:0;color:#fff;font-size:17px;font-family:Georgia,serif;line-height:1.7'>"+card[flashFrontLang]+"</p>"
+      +"</div>";
+  } else {
+    var bl=flashBackLangs.filter(function(l){return l!==flashFrontLang;});
+    el.innerHTML="<span class='flash-hint'>"+hint+"</span>"+secSpan
+      +"<div class='flash-content'>"+bl.map(function(l,li){
+        return "<div style='"+(li<bl.length-1?"margin-bottom:14px":"")+"'>"
+          +"<div style='display:flex;align-items:center;gap:8px;margin-bottom:5px'>"+badge(l)+makeSB(card[l],l,"fsb"+li,"playing-teal")+"</div>"
+          +"<p style='margin:0;color:#E0E0E0;font-size:15px;font-family:Georgia,serif;line-height:1.6'>"+card[l]+"</p>"
+          +"</div>";
+      }).join("")+"</div>";
+  }
+  document.getElementById("flashCount").textContent=(flashIdx%flashDeck.length+1)+" / "+flashDeck.length;
+}
+function flipCard(){flashFlipped=!flashFlipped;renderFlash();}
+function nextCard(){flashIdx++;flashFlipped=false;renderFlash();}
+function prevCard(){if(flashIdx>0)flashIdx--;flashFlipped=false;renderFlash();}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildQuizControls(){
+  document.getElementById("quizFromBtns").innerHTML=ALL_LANGS.map(function(l){
+    var c=LANG_COLORS[l],on=l===quizFromLang;
+    return "<button class='mini-btn' onclick=\"setQFrom('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+  document.getElementById("quizToBtns").innerHTML=ALL_LANGS.filter(function(l){return l!==quizFromLang;}).map(function(l){
+    var c=LANG_COLORS[l],on=l===quizToLang;
+    return "<button class='mini-btn' onclick=\"setQTo('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+}
+function setQFrom(l){quizFromLang=l;if(l===quizToLang)quizToLang=ALL_LANGS.filter(function(x){return x!==l;})[0];buildQuizControls();renderQuiz();}
+function setQTo(l){quizToLang=l;buildQuizControls();renderQuiz();}
+function renderQuiz(){
+  var phrase=allPhrases[Math.floor(Math.random()*allPhrases.length)];
+  var correct=phrase[quizToLang];
+  var wrong=shuffle(allPhrases.filter(function(p){return p[quizToLang]!==correct;})).slice(0,3).map(function(p){return p[quizToLang];});
+  var opts=shuffle([correct].concat(wrong));
+  var sec=SECTIONS[phrase.sectionKey];
+  window._qc={phrase:phrase,correct:correct,opts:opts};
+  document.getElementById("quizArea").innerHTML=
+    "<div class='quiz-question'>"
+    +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:10px'>"+badge(quizFromLang)+makeSB(phrase[quizFromLang],quizFromLang,"qsb")+"</div>"
+    +"<p class='quiz-qtext'>"+phrase[quizFromLang]+"</p>"
+    +"<p class='quiz-section'>"+sec.icon+" "+sec.label.pt+"</p>"
+    +"</div>"
+    +"<p style='color:#777;font-size:13px;margin-bottom:10px'>Tradução em "+badge(quizToLang)+":</p>"
+    +"<div>"+opts.map(function(opt,i){
+      return "<div class='option-row'>"
+        +"<button class='opt-btn' onclick='selectOpt("+i+")'>"+String.fromCharCode(65+i)+". "+opt+"</button>"
+        +"<span id='qspk"+i+"'></span>"
+        +"</div>";
+    }).join("")+"</div>"
+    +"<div class='center' id='quizFB'></div>";
+}
+function selectOpt(i){
+  var qc=window._qc;if(!qc)return;
+  var ok=qc.opts[i]===qc.correct;
+  quizScore.correct+=ok?1:0;quizScore.total++;
+  document.getElementById("qScoreOk").textContent="✅ "+quizScore.correct;
+  document.getElementById("qScoreTotal").textContent="📊 "+quizScore.total;
+  var pct=document.getElementById("qScorePct");pct.style.display="block";
+  pct.textContent="🎯 "+Math.round(quizScore.correct/quizScore.total*100)+"%";
+  document.querySelectorAll(".opt-btn").forEach(function(btn,j){
+    btn.onclick=null;btn.style.cursor="default";
+    if(qc.opts[j]===qc.correct){btn.classList.add("correct");document.getElementById("qspk"+j).innerHTML=makeSB(qc.opts[j],quizToLang,"qcspk","playing-teal");}
+    else if(j===i)btn.classList.add("wrong");
+  });
+  document.getElementById("quizFB").innerHTML=
+    "<div style='color:"+(ok?"#4ECDC4":"#f55")+";font-size:15px;margin-bottom:12px'>"+(ok?"✅ Correto!":"❌ Incorreto!")+"</div>"
+    +"<button class='big-btn btn-orange' onclick='renderQuiz()'>PRÓXIMA →</button>";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LISTEN
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildListenControls(){
+  document.getElementById("listenLangBtns").innerHTML=ALL_LANGS.map(function(l){
+    var c=LANG_COLORS[l],on=l===listenFromLang;
+    return "<button class='mini-btn' onclick=\"setLFrom('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+  document.getElementById("listenTargetBtns").innerHTML=ALL_LANGS.filter(function(l){return l!==listenFromLang;}).map(function(l){
+    var c=LANG_COLORS[l],on=l===listenTargetLang;
+    return "<button class='mini-btn' onclick=\"setLTarget('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+}
+function setLFrom(l){listenFromLang=l;if(l===listenTargetLang)listenTargetLang=ALL_LANGS.filter(function(x){return x!==l;})[0];buildListenControls();renderListen();}
+function setLTarget(l){listenTargetLang=l;buildListenControls();renderListen();}
+function renderListen(){
+  var phrase=allPhrases[Math.floor(Math.random()*allPhrases.length)];
+  var correct=phrase[listenTargetLang];
+  var wrong=shuffle(allPhrases.filter(function(p){return p[listenTargetLang]!==correct;})).slice(0,3).map(function(p){return p[listenTargetLang];});
+  var opts=shuffle([correct].concat(wrong));
+  listenCurrent={phrase:phrase,correct:correct,opts:opts};
+  var fc=LANG_COLORS[listenFromLang];
+  document.getElementById("listenArea").innerHTML=
+    "<div class='listen-card'>"
+    +"<p style='color:#888;font-size:13px;margin-bottom:8px'>Ouça e identifique a tradução correta</p>"
+    +"<span style='background:"+fc.bg+";color:"+fc.text+";border-radius:20px;padding:3px 14px;font-size:12px;font-weight:700;display:inline-block;margin-bottom:14px'>"+fc.label+"</span><br>"
+    +"<button class='listen-big-btn' id='listenPlayBtn' onclick='playListenPhrase()'>🔊</button>"
+    +"<p style='color:#777;font-size:12px'>Toque para ouvir novamente</p>"
+    +"</div>"
+    +"<p style='color:#777;font-size:13px;margin-bottom:10px'>Identifique em "+badge(listenTargetLang)+":</p>"
+    +"<div class='listen-opts'>"+opts.map(function(opt,i){
+      return "<button class='listen-opt' onclick='selectListenOpt("+i+")'>"+String.fromCharCode(65+i)+". "+opt+"</button>";
+    }).join("")+"</div>"
+    +"<div class='center' id='listenFB'></div>";
+  setTimeout(playListenPhrase,400);
+}
+function playListenPhrase(){
+  if(!listenCurrent)return;
+  var btn=document.getElementById("listenPlayBtn");
+  if(btn){btn.classList.add("playing");btn.textContent="⏸";}
+  speak(listenCurrent.phrase[listenFromLang],listenFromLang,function(){if(btn){btn.classList.remove("playing");btn.textContent="🔊";}});
+}
+function selectListenOpt(i){
+  if(!listenCurrent)return;
+  var ok=listenCurrent.opts[i]===listenCurrent.correct;
+  listenScore.correct+=ok?1:0;listenScore.total++;
+  document.getElementById("lScoreOk").textContent="✅ "+listenScore.correct;
+  document.getElementById("lScoreTotal").textContent="📊 "+listenScore.total;
+  var pct=document.getElementById("lScorePct");pct.style.display="block";
+  pct.textContent="🎯 "+Math.round(listenScore.correct/listenScore.total*100)+"%";
+  document.querySelectorAll(".listen-opt").forEach(function(btn,j){
+    btn.onclick=null;btn.style.cursor="default";
+    if(listenCurrent.opts[j]===listenCurrent.correct)btn.classList.add("correct");
+    else if(j===i)btn.classList.add("wrong");
+  });
+  document.getElementById("listenFB").innerHTML=
+    "<div style='color:"+(ok?"#4ECDC4":"#f55")+";font-size:15px;margin:12px 0 10px'>"+(ok?"✅ Correto!":"❌ Incorreto!")+"</div>"
+    +"<div class='listen-transcript'>"+badge(listenFromLang)+" "+listenCurrent.phrase[listenFromLang]+"<br><br>"+badge(listenTargetLang)+" <strong>"+listenCurrent.correct+"</strong></div>"
+    +"<div style='margin-top:12px'>"
+    +"<button class='big-btn btn-gray' style='margin-right:8px' onclick='playListenPhrase()'>🔊 Ouvir de novo</button>"
+    +"<button class='big-btn btn-orange' onclick='renderListen()'>PRÓXIMA →</button>"
+    +"</div>";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DIALOG
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildDialogTabs(){
+  document.getElementById("dialogTabs").innerHTML=DIALOGS.map(function(d,i){
+    return "<button class='sec-btn' onclick='setDialog("+i+")' style='"+(i===activeDialogIdx?"background:#FF6B35;color:#000":"")+"'>"+SECTIONS[d.section].icon+" "+d.title.pt+"</button>";
+  }).join("");
+}
+function setDialog(i){activeDialogIdx=i;revealedLines=[0];dialogShowAll=false;buildDialogTabs();renderDialog();}
+function renderDialog(){
+  var dlg=DIALOGS[activeDialogIdx];
+  document.getElementById("dialogPlayBtns").innerHTML=activeLangs.map(function(l){
+    var c=LANG_COLORS[l];
+    return "<button onclick=\"playDialog('"+l+"')\" style='background:"+c.bg+";color:"+c.text+";border:none;border-radius:20px;padding:3px 12px;cursor:pointer;font-size:11px;font-weight:700'>"+c.label+"</button>";
+  }).join("");
+  document.getElementById("dialogLines").innerHTML=dlg.lines.map(function(line,i){
+    var vis=revealedLines.indexOf(i)>=0||dialogShowAll;
+    var isA=line.sp==="A";
+    var linesHtml=activeLangs.map(function(l,li){
+      return "<div style='"+(li<activeLangs.length-1?"margin-bottom:10px":"")+"'>"
+        +"<div style='display:flex;align-items:center;gap:7px;margin-bottom:3px'>"+badge(l)+makeSB(line[l],l,"dl"+i+l,isA?"playing":"playing-teal")+"</div>"
+        +"<p class='phrase-text'>"+line[l]+"</p>"
+        +"</div>";
+    }).join("");
+    return "<div class='dialog-line "+(vis?"":"hidden")+"' style='align-items:"+(isA?"flex-start":"flex-end")+"'>"
+      +"<div class='speaker-label'><span class='speaker-tag "+(isA?"tag-a":"tag-b")+"'>"+line.sp+"</span>"+line.role.pt+" / "+line.role.en+"</div>"
+      +"<div class='bubble "+(isA?"bubble-a":"bubble-b")+"'>"+linesHtml+"</div>"
+      +"</div>";
+  }).join("");
+  var ctrl=document.getElementById("dialogControls");
+  if(!dialogShowAll){
+    var allRevealed=revealedLines.length>=dlg.lines.length;
+    ctrl.innerHTML="<button class='big-btn btn-teal' onclick='revealNext()'>"+(allRevealed?"VER TUDO ✓":"PRÓXIMA FALA ▶")+"</button>";
+  } else {
+    ctrl.innerHTML="<button class='big-btn btn-gray' onclick='setDialog("+activeDialogIdx+")'>🔄 Reiniciar</button>";
+  }
+}
+function revealNext(){
+  var dlg=DIALOGS[activeDialogIdx];
+  if(revealedLines.length<dlg.lines.length)revealedLines.push(revealedLines.length);
+  else dialogShowAll=true;
+  renderDialog();
+}
+function playDialog(lang){
+  var lines=DIALOGS[activeDialogIdx].lines;var i=0;
+  function next(){if(i>=lines.length)return;speak(lines[i][lang],lang,function(){i++;setTimeout(next,600);});}next();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONVERSAS
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderConvos(){
+  document.getElementById("convoList").innerHTML=CONVOS.map(function(c,ci){
+    var bodyHtml=c.lines.map(function(line,li){
+      var isA=line.sp==="A";
+      var langs=activeLangs.map(function(l){
+        return "<div style='margin-bottom:6px'>"
+          +"<div style='display:flex;align-items:center;gap:6px;margin-bottom:2px'>"+badge(l)+makeSB(line[l],l,"cv"+ci+li+l,isA?"playing":"playing-teal")+"</div>"
+          +"<p style='margin:0;font-family:Georgia,serif;font-size:13px;line-height:1.6;color:"+(l==="pt"?"#fff":"#aaa")+"'>"+line[l]+"</p>"
+          +"</div>";
+      }).join("");
+      return "<div class='convo-line' style='align-items:"+(isA?"flex-start":"flex-end")+"'>"
+        +"<div class='convo-speaker'><span style='background:"+(isA?"#FF6B35":"#4ECDC4")+";color:#000;border-radius:20px;padding:1px 8px;font-weight:800;font-size:10px'>"+line.sp+"</span> "+line.name.pt+"</div>"
+        +"<div class='convo-bubble "+(isA?"convo-bubble-a":"convo-bubble-b")+"'>"+langs+"</div>"
+        +"</div>";
+    }).join("");
+    var playBtns=ALL_LANGS.map(function(l){
+      var col=LANG_COLORS[l];
+      return "<button onclick=\"playConvo("+ci+",'"+l+"')\" style='background:"+col.bg+";color:"+col.text+";border:none;border-radius:20px;padding:3px 12px;cursor:pointer;font-size:11px;font-weight:700'>"+col.label+"</button>";
+    }).join("");
+    return "<div class='convo-card'>"
+      +"<div class='convo-header' onclick='toggleConvo("+ci+")'>"
+      +"<span style='font-size:22px'>"+c.emoji+"</span>"
+      +"<div style='flex:1'><div class='convo-title'>"+c.title+"</div><div class='convo-sub'>"+c.subtitle+" · "+c.lines.length+" falas</div></div>"
+      +"<span style='color:#555;font-size:18px'>"+(openConvoIdx===ci?"▲":"▼")+"</span>"
+      +"</div>"
+      +"<div class='convo-body "+(openConvoIdx===ci?"open":"")+"'>"
+      +"<div class='convo-play-row'><span style='color:#666;font-size:11px'>🔊 Ouvir em:</span>"+playBtns+"</div>"
+      +bodyHtml
+      +"</div>"
+      +"</div>";
+  }).join("");
+}
+function toggleConvo(i){openConvoIdx=openConvoIdx===i?-1:i;renderConvos();}
+function playConvo(ci,lang){
+  var lines=CONVOS[ci].lines;var i=0;
+  function next(){if(i>=lines.length)return;speak(lines[i][lang],lang,function(){i++;setTimeout(next,700);});}next();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILL
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildFillControls(){
+  document.getElementById("fillLangBtns").innerHTML=ALL_LANGS.map(function(l){
+    var c=LANG_COLORS[l],on=l===fillLang;
+    return "<button class='mini-btn' onclick=\"setFillLang('"+l+"')\" style='background:"+(on?c.bg:"transparent")+";color:"+(on?c.text:"#666")+";border:1px solid "+(on?c.bg:"#444")+"'>"+c.label+"</button>";
+  }).join("");
+}
+function setFillLang(l){fillLang=l;buildFillControls();renderFill();}
+function renderFill(){
+  var phrase=allPhrases[Math.floor(Math.random()*allPhrases.length)];
+  var words=phrase[fillLang].split(" ");
+  var idx=Math.floor(words.length*0.3+Math.random()*words.length*0.4);
+  var keyWord=words[idx].replace(/[.,!?;:°]/g,"");
+  var punct=words[idx].slice(keyWord.length);
+  var blank=words.slice();blank[idx]="___"+punct;
+  fillExercise={phrase:phrase,keyWord:keyWord,display:blank.join(" ")};
+  fillChecked=false;
+  document.getElementById("fillRefs").innerHTML=ALL_LANGS.filter(function(l){return l!==fillLang&&activeLangs.indexOf(l)>=0;}).map(function(l){
+    return "<div class='fill-ref'>"
+      +"<div style='display:flex;align-items:center;gap:7px;margin-bottom:4px'>"+badge(l)+makeSB(phrase[l],l,"fr"+l)+"</div>"
+      +"<p class='phrase-text'>"+phrase[l]+"</p>"
+      +"</div>";
+  }).join("");
+  document.getElementById("fillQLang").innerHTML=badge(fillLang);
+  document.getElementById("fillQText").textContent=fillExercise.display;
+  document.getElementById("fillInput").value="";
+  document.getElementById("fillInput").disabled=false;
+  document.getElementById("fillInput").style.borderColor="#555";
+  document.getElementById("fillSubmit").style.display="inline-block";
+  var nb=document.getElementById("fillNextBtn");
+  if(nb)nb.remove();
+  document.getElementById("fillResult").style.display="none";
+}
+function checkFill(){
+  if(fillChecked||!fillExercise)return;
+  var val=document.getElementById("fillInput").value.trim();
+  if(!val)return;
+  fillChecked=true;
+  var ok=val.toLowerCase()===fillExercise.keyWord.toLowerCase();
+  fillScore.correct+=ok?1:0;fillScore.total++;
+  document.getElementById("fScoreOk").textContent="✅ "+fillScore.correct+"/"+fillScore.total;
+  var pct=document.getElementById("fScorePct");pct.style.display="block";
+  pct.textContent="🎯 "+Math.round(fillScore.correct/fillScore.total*100)+"%";
+  document.getElementById("fillInput").disabled=true;
+  document.getElementById("fillInput").style.borderColor=ok?"#4ECDC4":"#f55";
+  document.getElementById("fillSubmit").style.display="none";
+  var nb=document.createElement("button");
+  nb.className="fill-next-btn";nb.id="fillNextBtn";nb.textContent="→";nb.onclick=renderFill;
+  document.querySelector(".fill-row").appendChild(nb);
+  var res=document.getElementById("fillResult");
+  res.style.display="block";
+  res.className="fill-result "+(ok?"result-ok":"result-fail");
+  res.innerHTML=ok?"✅ Correto! <strong>"+fillExercise.keyWord+"</strong>":"❌ Era: <strong style='color:#fff'>"+fillExercise.keyWord+"</strong>";
+  if(ok)speak(fillExercise.phrase[fillLang],fillLang);
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      console.log('SW registered');
+    }).catch(function(e){console.log('SW error',e);});
+  });
+}
+</script>
+</body>
+</html>
